@@ -1,3 +1,9 @@
+pynmsg (0.1-2) debian-rsf; urgency=low
+
+  * Rebuild for wheezy-rsf.
+
+ -- Robert S. Edmonds <edmonds@debian.org>  Wed, 24 Oct 2012 15:42:47 -0400
+
 pynmsg (0.1-1) unstable; urgency=low
 
   * Initial release.
