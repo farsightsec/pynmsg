@@ -12,7 +12,11 @@ try:
     setup(
         name = NAME,
         version = VERSION,
-        ext_modules = [ Extension('_nmsg', ['_nmsg.pyx'], libraries = ['nmsg']) ],
+        ext_modules = [ Extension('_nmsg', ['_nmsg.pyx'], libraries = ['nmsg'],
+            depends = [ 'nmsg_input.pyx', 'nmsg_io.pyx', 'nmsg_message.pyx', 
+                        'nmsg_msgmod.pyx', 'nmsg_msgtype.pyx',
+                        'nmsg_output.pyx', 'nmsg_util.pyx', 'nmsg.pxi' ],
+                ) ],
         cmdclass = {'build_ext': build_ext},
         py_modules = ['nmsg'],
     )
