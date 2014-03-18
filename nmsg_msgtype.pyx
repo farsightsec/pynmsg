@@ -25,3 +25,8 @@ class _msgtype(object):
                 v_dict['_vid'] = vid
 
                 setattr(self, vname, type(vname, (object,), v_dict))
+
+                # map 'isc' to 'base' vendor to avoid breaking code
+                # upon upgrade from libnmsg 0.7 to libnmsg 0.8
+                if vname == 'base' and not getattr(self, 'isc', None):
+                    setattr(self, 'isc', type(vname, (object,), v_dict))

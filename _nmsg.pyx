@@ -14,7 +14,9 @@ chalias_fnames = (
 )
 
 nmsg_set_autoclose(False)
-nmsg_init()
+res = nmsg_init()
+if res != nmsg_res_success:
+    raise Exception, 'unable to initialize libnmsg'
 
 include "nmsg_msgmod.pyx"
 include "nmsg_message.pyx"

@@ -20,6 +20,7 @@ def output_open_sock(addr, port, size_t bufsz=NMSG_WBUFSZ_ETHER, broadcast=False
 def output_open_callback(func):
     o = output()
     o._open_callback(func)
+    o.func = func
     return o
 
 cdef void callback(nmsg_message_t _msg, void *user) with gil:
@@ -33,6 +34,7 @@ cdef void callback(nmsg_message_t _msg, void *user) with gil:
 cdef class output(object):
     cdef nmsg_output_t _instance
     cdef public object fileobj
+    cdef public object func
     cdef str output_type
 
     open_file = staticmethod(output_open_file)

@@ -153,7 +153,7 @@ cdef extern from "nmsg.h":
 
     ctypedef void (*nmsg_cb_message)(nmsg_message_t, void *user)
 
-    void                nmsg_init()
+    nmsg_res            nmsg_init()
     void                nmsg_set_autoclose(bool)
     void                nmsg_set_debug(int)
 

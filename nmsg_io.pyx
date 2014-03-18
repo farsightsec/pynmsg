@@ -127,3 +127,6 @@ cdef class io(object):
             res = nmsg_io_loop(self._instance)
         if res != nmsg_res_success:
             raise Exception, 'nmsg_io_loop() failed: %s' % (nmsg_res_lookup(res))
+
+    def break_loop(self):
+        nmsg_io_breakloop(self._instance)
