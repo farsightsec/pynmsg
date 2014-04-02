@@ -13,6 +13,7 @@ try:
         name = NAME,
         version = VERSION,
         ext_modules = [ Extension('_nmsg', ['_nmsg.pyx'], libraries = ['nmsg'],
+	    include_dirs = ['/usr/local/include'],
             depends = [ 'nmsg_input.pyx', 'nmsg_io.pyx', 'nmsg_message.pyx',
                         'nmsg_msgmod.pyx', 'nmsg_msgtype.pyx',
                         'nmsg_output.pyx', 'nmsg_util.pyx', 'nmsg.pxi' ],
@@ -25,7 +26,7 @@ except ImportError:
         setup(
             name = NAME,
             version = VERSION,
-            ext_modules = [ Extension('_nmsg', ['_nmsg.c'], libraries = ['nmsg']) ],
+            ext_modules = [ Extension('_nmsg', ['_nmsg.c'], include_dirs = ['/usr/local/include'], libraries = ['nmsg']) ],
             py_modules = ['nmsg'],
         )
     else:
