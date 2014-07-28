@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 NAME = 'pynmsg'
-VERSION = '0.3.0'
+VERSION = '0.3.1'
 
 from distutils.core import setup
 from distutils.extension import Extension
@@ -13,7 +13,7 @@ try:
         name = NAME,
         version = VERSION,
         ext_modules = [ Extension('_nmsg', ['_nmsg.pyx'], libraries = ['nmsg'],
-            depends = [ 'nmsg_input.pyx', 'nmsg_io.pyx', 'nmsg_message.pyx', 
+            depends = [ 'nmsg_input.pyx', 'nmsg_io.pyx', 'nmsg_message.pyx',
                         'nmsg_msgmod.pyx', 'nmsg_msgtype.pyx',
                         'nmsg_output.pyx', 'nmsg_util.pyx', 'nmsg.pxi' ],
                 ) ],

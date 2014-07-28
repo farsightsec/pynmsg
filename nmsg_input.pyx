@@ -109,7 +109,11 @@ cdef class input(object):
 
         while res != nmsg_res_success:
             res = nmsg_input_read(self._instance, &_msg)
-            if res == nmsg_res_eof:
+            if res == nmsg_res_success:
+                msg = _recv_message()
+                msg.set_instance(_msg)
+                return msg
+            elif res == nmsg_res_eof:
                 return None
             elif res == nmsg_res_again:
                 err = PyErr_CheckSignals()
@@ -118,11 +122,10 @@ cdef class input(object):
                         raise KeyboardInterrupt
                 elif self.blocking_io == False:
                     return None
+                continue
+            else:
+                raise Exception, 'nmsg_input_read() failed: %s' % nmsg_res_lookup(res)
         
-        msg = _recv_message()
-        msg.set_instance(_msg)
-        return msg
-
     def set_filter_msgtype(self, vid, msgtype):
         if self._instance == NULL:
             raise Exception, 'object not initialized'
