@@ -159,7 +159,7 @@ cdef extern from "nmsg.h":
 
     char *              nmsg_res_lookup(unsigned res)
 
-    char *              nmsg_alias_by_key(unsigned ae, unsigned key)
+    const char *        nmsg_alias_by_key(unsigned ae, unsigned key)
     unsigned            nmsg_alias_by_value(unsigned ae, char *value)
 
     nmsg_io_t           nmsg_io_init()
@@ -172,8 +172,8 @@ cdef extern from "nmsg.h":
 
     unsigned            nmsg_msgmod_get_max_vid()
     unsigned            nmsg_msgmod_get_max_msgtype(unsigned vid)
-    char *              nmsg_msgmod_vid_to_vname(unsigned vid)
-    char *              nmsg_msgmod_msgtype_to_mname(unsigned vid, unsigned msgtype)
+    const char *        nmsg_msgmod_vid_to_vname(unsigned vid)
+    const char *        nmsg_msgmod_msgtype_to_mname(unsigned vid, unsigned msgtype)
     nmsg_msgmod_t       nmsg_msgmod_lookup(unsigned vid, unsigned msgtype)
     nmsg_msgmod_t       nmsg_msgmod_lookup_byname(char *vname, char *mname)
     unsigned            nmsg_msgmod_vname_to_vid(char *vname)
@@ -185,7 +185,7 @@ cdef extern from "nmsg.h":
     nmsg_message_t      nmsg_message_init(nmsg_msgmod_t mod)
     void                nmsg_message_destroy(nmsg_message_t *msg)
     nmsg_res            nmsg_message_get_num_fields(nmsg_message_t msg, size_t *n_fields)
-    nmsg_res            nmsg_message_get_field_name(nmsg_message_t msg, unsigned idx, char **field_name)
+    nmsg_res            nmsg_message_get_field_name(nmsg_message_t msg, unsigned idx, const char **field_name)
     nmsg_res            nmsg_message_get_field_type_by_idx(nmsg_message_t msg, unsigned field_idx, nmsg_msgmod_field_type *type)
     nmsg_res            nmsg_message_get_field_by_idx(nmsg_message_t msg, unsigned field_idx, unsigned val_idx, void **data, size_t *len)
     nmsg_res            nmsg_message_get_field_flags_by_idx(nmsg_message_t msg, unsigned field_idx, unsigned *flags)
@@ -207,7 +207,7 @@ cdef extern from "nmsg.h":
     nmsg_res            nmsg_message_enum_name_to_value(nmsg_message_t msg, char *field_name, char *name, unsigned *value)
     nmsg_res            nmsg_message_enum_name_to_value_by_idx(nmsg_message_t msg, unsigned field_idx, char *name, unsigned *value)
     nmsg_res            nmsg_message_enum_value_to_name(nmsg_message_t msg, char *field_name, unsigned value, char **name)
-    nmsg_res            nmsg_message_enum_value_to_name_by_idx(nmsg_message_t msg, unsigned field_idx, unsigned value, char **name)
+    nmsg_res            nmsg_message_enum_value_to_name_by_idx(nmsg_message_t msg, unsigned field_idx, unsigned value, const char **name)
 
     nmsg_input_t        nmsg_input_open_file(int fd)
     nmsg_input_t        nmsg_input_open_sock(int fd)

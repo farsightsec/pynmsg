@@ -1,7 +1,7 @@
 class _msgtype(object):
     def __init__(self):
-        cdef char *vname_str
-        cdef char *mname_str
+        cdef const char *vname_str
+        cdef const char *mname_str
 
         for vid from 1 <= vid <= nmsg_msgmod_get_max_vid():
             vname_str = nmsg_msgmod_vid_to_vname(vid)
