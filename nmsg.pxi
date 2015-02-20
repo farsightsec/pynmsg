@@ -29,10 +29,6 @@ cdef extern from "time.h":
         long tv_nsec
  
 cdef extern from "Python.h":
-    int PyString_AsStringAndSize(object string, char **buffer, Py_ssize_t *length) except -1
-    object PyString_FromStringAndSize(char *v, int len)
-    Py_ssize_t PyString_Size(object string)
-    char *PyString_AsString(object string)
     void Py_INCREF(object)
     void Py_DECREF(object)
     void PyEval_InitThreads()

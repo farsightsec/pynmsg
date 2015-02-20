@@ -7,8 +7,8 @@ cdef class message(object):
     cdef public long time_sec
     cdef public int time_nsec
     cdef public long source
-    cdef public object operator
-    cdef public object group
+    cdef public bytes operator
+    cdef public bytes group
     cdef public bool has_source
     cdef public bool has_operator
     cdef public bool has_group
@@ -78,7 +78,7 @@ cdef class message(object):
             if a != NULL:
                 self.operator = a
             else:
-                self.operator = '<UNKNOWN>'
+                self.operator = b'<UNKNOWN>'
         else:
             self.operator = None
 
@@ -89,7 +89,7 @@ cdef class message(object):
             if a != NULL:
                 self.group = a
             else:
-                self.group = '<UNKNOWN>'
+                self.group = b'<UNKNOWN>'
         else:
             self.group = None
 
@@ -112,13 +112,13 @@ cdef class message(object):
             nmsg_message_set_source(self._instance, 0)
 
         if self.has_operator:
-            u = nmsg_alias_by_value(nmsg_alias_operator, PyString_AsString(self.operator))
+            u = nmsg_alias_by_value(nmsg_alias_operator, self.operator)
             nmsg_message_set_operator(self._instance, u)
         else:
             nmsg_message_set_operator(self._instance, 0)
 
         if self.has_group:
-            u = nmsg_alias_by_value(nmsg_alias_group, PyString_AsString(self.group))
+            u = nmsg_alias_by_value(nmsg_alias_group, self.group)
             nmsg_message_set_group(self._instance, u)
         else:
             nmsg_message_set_group(self._instance, 0)
@@ -176,29 +176,25 @@ cdef class message(object):
                     val_enum = (<unsigned *> data)[0]
                     res = nmsg_message_enum_value_to_name_by_idx(self._instance, field_idx, val_enum, &str_enum)
                     if res == nmsg_res_success:
-                        s = PyString_FromStringAndSize(str_enum, strlen(str_enum))
-                        val_list.append(s)
+                        val_list.append(<bytes> str_enum)
                     else:
                         val_list.append(val_enum)
 
                 elif field_type == nmsg_msgmod_ft_bytes:
-                    s = PyString_FromStringAndSize(<char *> data, data_len)
-                    val_list.append(s)
+                    val_list.append(data[:data_len])
 
                 elif field_type == nmsg_msgmod_ft_string or \
                         field_type == nmsg_msgmod_ft_mlstring:
                     if data_len > 0 and data[data_len - 1] == '\x00':
                         data_len -= 1
-                    s = PyString_FromStringAndSize(<char *> data, data_len)
-                    val_list.append(s)
+                    val_list.append(data[:data_len])
 
                 elif field_type == nmsg_msgmod_ft_ip:
-                    ip = PyString_FromStringAndSize(<char *> data, data_len)
+                    ip = data[:data_len]
                     if data_len == 4:
-                        sip = socket.inet_ntop(socket.AF_INET, ip)
+                        val_list.append(socket.inet_ntop(socket.AF_INET, ip))
                     elif data_len == 16:
-                        sip = socket.inet_ntop(socket.AF_INET6, ip)
-                    val_list.append(sip)
+                        val_list.append(socket.inet_ntop(socket.AF_INET6, ip))
 
                 elif field_type == nmsg_msgmod_ft_uint16 or \
                         field_type == nmsg_msgmod_ft_uint32:
@@ -283,25 +279,22 @@ cdef class message(object):
                         raise Exception, 'unhandled python enum type: %s' % type(fields[i])
 
                 elif field_type == nmsg_msgmod_ft_bytes:
-                    PyString_AsStringAndSize(fields[i], &val_buf, &val_buf_len)
-                    data = <uint8_t *> val_buf
-                    data_len = val_buf_len
+                    data = fields[i]
+                    data_len = len(data)
 
                 elif field_type == nmsg_msgmod_ft_string or \
                         field_type == nmsg_msgmod_ft_mlstring:
-                    tmp_string = fields[i] + '\x00'
-                    PyString_AsStringAndSize(tmp_string, &val_buf, &val_buf_len)
-                    data = <uint8_t *> val_buf
-                    data_len = val_buf_len
+                    tmp_py_string = fields[i] + '\x00'
+                    data = tmp_py_string
+                    data_len = len(data)
 
                 elif field_type == nmsg_msgmod_ft_ip:
                     try:
                         ip = socket.inet_pton(socket.AF_INET, fields[i])
                     except:
                         ip = socket.inet_pton(socket.AF_INET6, fields[i])
-                    PyString_AsStringAndSize(ip, &val_buf, &val_buf_len)
-                    data = <uint8_t *> val_buf
-                    data_len = val_buf_len
+                    data = ip
+                    data_len = len(ip)
 
                 elif field_type == nmsg_msgmod_ft_uint16:
                     val_uint16 = fields[i]

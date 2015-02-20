@@ -30,7 +30,7 @@ cdef class nullinput(object):
     def __repr__(self):
         return 'nmsg nullinput object _instance=0x%x' % <uint64_t> self._instance
 
-    def read(self, str buf):
+    def read(self, bytes buf):
         cdef nmsg_res res
         cdef nmsg_message_t *_msgarray
         cdef size_t n_msg
@@ -40,7 +40,7 @@ cdef class nullinput(object):
         if self._instance == NULL:
             raise Exception, 'object not initialized'
 
-        res = nmsg_input_read_null(self._instance, <uint8_t *> PyString_AsString(buf), len(buf), NULL, &_msgarray, &n_msg)
+        res = nmsg_input_read_null(self._instance, buf, len(buf), NULL, &_msgarray, &n_msg)
 
         if res == nmsg_res_success:
             for i from 0 <= i < n_msg:
@@ -140,22 +140,22 @@ cdef class input(object):
             raise Exception, 'object not initialized'
         nmsg_input_set_filter_source(self._instance, source)
 
-    def set_filter_operator(self, str s_operator):
+    def set_filter_operator(self, bytes s_operator):
         cdef unsigned operator
 
         if self._instance == NULL:
             raise Exception, 'object not initialized'
-        operator = nmsg_alias_by_value(nmsg_alias_operator, PyString_AsString(s_operator))
+        operator = nmsg_alias_by_value(nmsg_alias_operator, s_operator)
         if operator == 0:
             raise Exception, 'unknown operator %s' % s_operator
         nmsg_input_set_filter_operator(self._instance, operator)
 
-    def set_filter_group(self, str s_group):
+    def set_filter_group(self, bytes s_group):
         cdef unsigned group
 
         if self._instance == NULL:
             raise Exception, 'object not initialized'
-        group = nmsg_alias_by_value(nmsg_alias_group, PyString_AsString(s_group))
+        group = nmsg_alias_by_value(nmsg_alias_group, s_group)
         if group == 0:
             raise Exception, 'unknown group %s' % s_group
         nmsg_input_set_filter_group(self._instance, group)
