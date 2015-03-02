@@ -179,7 +179,7 @@ cdef extern from "nmsg.h" nogil:
     nmsg_io_t           nmsg_io_init()
     nmsg_res            nmsg_io_add_input(nmsg_io_t, nmsg_input_t, void *user)
     nmsg_res            nmsg_io_add_output(nmsg_io_t, nmsg_output_t, void *user)
-    nmsg_res            nmsg_io_loop(nmsg_io_t)
+    nmsg_res            nmsg_io_loop(nmsg_io_t) nogil
     void                nmsg_io_breakloop(nmsg_io_t)
     void                nmsg_io_destroy(nmsg_io_t *)
     void                nmsg_io_set_debug(nmsg_io_t, int debug)

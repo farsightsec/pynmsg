@@ -41,7 +41,8 @@ cdef class io(object):
         self.inputs = []
         self.outputs = []
 
-        self._instance = nmsg_io_init()
+        with nogil:
+            self._instance = nmsg_io_init()
         if self._instance == NULL:
             raise Exception, 'nmsg_io_init() failed'
         #nmsg_io_set_debug(self._instance, 4)
@@ -59,7 +60,8 @@ cdef class io(object):
         if self.filter_group:
             i.set_filter_group(self.filter_group)
 
-        res = nmsg_io_add_input(self._instance, i._instance, NULL)
+        with nogil:
+            res = nmsg_io_add_input(self._instance, i._instance, NULL)
         if res != nmsg_res_success:
             raise Exception, 'nmsg_io_add_input() failed'
         self.inputs.append(i)
@@ -99,7 +101,8 @@ cdef class io(object):
 
         o.set_filter_msgtype(self.filter_vid, self.filter_msgtype)
 
-        res = nmsg_io_add_output(self._instance, o._instance, NULL)
+        with nogil:
+            res = nmsg_io_add_output(self._instance, o._instance, NULL)
         if res != nmsg_res_success:
             raise Exception, 'nmsg_io_add_output() failed'
         self.outputs.append(o)
@@ -145,4 +148,5 @@ cdef class io(object):
             raise Exception, 'nmsg_io_loop() failed: %s' % (nmsg_res_lookup(res))
 
     def break_loop(self):
-        nmsg_io_breakloop(self._instance)
+        with nogil:
+            nmsg_io_breakloop(self._instance)

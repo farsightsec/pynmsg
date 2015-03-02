@@ -47,21 +47,24 @@ cdef class message(object):
         self.vid = vid
         self.msgtype = msgtype
         self._mod = msgmod(self.vid, self.msgtype)
-        self._instance = nmsg_message_init(self._mod._instance)
+        with nogil:
+            self._instance = nmsg_message_init(self._mod._instance)
         if self._instance == NULL:
             raise Exception, 'nmsg_message_init() failed'
 
         self.load_message()
 
     def __dealloc__(self):
-        if self._instance != NULL:
-            nmsg_message_destroy(&self._instance)
+        with nogil:
+            if self._instance != NULL:
+                nmsg_message_destroy(&self._instance)
 
     cdef reinit(self):
         if self._mod == None:
             self._mod = msgmod(self.vid, self.msgtype)
         if self._instance == NULL:
-            self._instance = nmsg_message_init(self._mod._instance)
+            with nogil:
+                self._instance = nmsg_message_init(self._mod._instance)
             if self._instance == NULL:
                 raise Exception, 'nmsg_message_init() failed'
             self.changed = True
@@ -71,23 +74,24 @@ cdef class message(object):
         cdef timespec ts
         cdef uint32_t u
 
-        if self._instance != NULL:
-            nmsg_message_destroy(&self._instance)
-        self._instance = instance
+        with nogil:
+            if self._instance != NULL:
+                nmsg_message_destroy(&self._instance)
+            self._instance = instance
 
-        self.vid = nmsg_message_get_vid(instance)
-        self.msgtype = nmsg_message_get_msgtype(instance)
+            self.vid = nmsg_message_get_vid(instance)
+            self.msgtype = nmsg_message_get_msgtype(instance)
 
-        nmsg_message_get_time(instance, &ts)
-        self.time_sec = ts.tv_sec
-        self.time_nsec = ts.tv_nsec
+            nmsg_message_get_time(instance, &ts)
+            self.time_sec = ts.tv_sec
+            self.time_nsec = ts.tv_nsec
 
-        u = nmsg_message_get_source(instance)
-        if u != 0:
-            self.has_source = True
-            self.source = u
+            u = nmsg_message_get_source(instance)
+            if u != 0:
+                self.has_source = True
+                self.source = u
 
-        u = nmsg_message_get_operator(instance)
+            u = nmsg_message_get_operator(instance)
         if u != 0:
             self.has_operator = True
             a = nmsg_alias_by_key(nmsg_alias_operator, u)
@@ -98,7 +102,8 @@ cdef class message(object):
         else:
             self.operator = None
 
-        u = nmsg_message_get_group(instance)
+        with nogil:
+            u = nmsg_message_get_group(instance)
         if u != 0:
             self.has_group = True
             a = nmsg_alias_by_key(nmsg_alias_group, u)
@@ -118,26 +123,31 @@ cdef class message(object):
         if self._instance == NULL:
             raise Exception, 'message not initialized'
 
-        ts.tv_sec = self.time_sec
-        ts.tv_nsec = self.time_nsec
-        nmsg_message_set_time(self._instance, &ts)
+        with nogil:
+            ts.tv_sec = self.time_sec
+            ts.tv_nsec = self.time_nsec
+            nmsg_message_set_time(self._instance, &ts)
 
-        if self.has_source:
-            nmsg_message_set_source(self._instance, self.source)
-        else:
-            nmsg_message_set_source(self._instance, 0)
+            if self.has_source:
+                nmsg_message_set_source(self._instance, self.source)
+            else:
+                nmsg_message_set_source(self._instance, 0)
 
         if self.has_operator:
             u = nmsg_alias_by_value(nmsg_alias_operator, PyString_AsString(self.operator))
-            nmsg_message_set_operator(self._instance, u)
+            with nogil:
+                nmsg_message_set_operator(self._instance, u)
         else:
-            nmsg_message_set_operator(self._instance, 0)
+            with nogil:
+                nmsg_message_set_operator(self._instance, 0)
 
         if self.has_group:
             u = nmsg_alias_by_value(nmsg_alias_group, PyString_AsString(self.group))
-            nmsg_message_set_group(self._instance, u)
+            with nogil:
+                nmsg_message_set_group(self._instance, u)
         else:
-            nmsg_message_set_group(self._instance, 0)
+            with nogil:
+                nmsg_message_set_group(self._instance, 0)
 
     cdef load_message(self):
         cdef nmsg_res res
@@ -161,18 +171,21 @@ cdef class message(object):
         self.field_types = {}
         self.field_names = set()
 
-        res = nmsg_message_get_num_fields(self._instance, &n_fields)
+        with nogil:
+            res = nmsg_message_get_num_fields(self._instance, &n_fields)
         if res != nmsg_res_success:
             raise Exception, 'nmsg_message_get_num_fields() failed'
 
         for field_idx from 0 <= field_idx < n_fields:
-            res = nmsg_message_get_field_name(self._instance, field_idx, &field_name)
+            with nogil:
+                res = nmsg_message_get_field_name(self._instance, field_idx, &field_name)
             if res != nmsg_res_success:
                 raise Exception, 'nmsg_message_get_field_name() failed'
 
             self.field_names.add(field_name)
 
-            res = nmsg_message_get_field_type_by_idx(self._instance, field_idx, &field_type)
+            with nogil:
+                res = nmsg_message_get_field_type_by_idx(self._instance, field_idx, &field_type)
             if res != nmsg_res_success:
                 raise Exception, 'nmsg_message_get_field_type_by_idx() failed'
 
@@ -190,7 +203,8 @@ cdef class message(object):
 
                 if field_type == nmsg_msgmod_ft_enum:
                     val_enum = (<unsigned *> data)[0]
-                    res = nmsg_message_enum_value_to_name_by_idx(self._instance, field_idx, val_enum, &str_enum)
+                    with nogil:
+                        res = nmsg_message_enum_value_to_name_by_idx(self._instance, field_idx, val_enum, &str_enum)
                     if res == nmsg_res_success:
                         s = PyString_FromStringAndSize(str_enum, strlen(str_enum))
                         val_list.append(s)
@@ -242,7 +256,8 @@ cdef class message(object):
                     val_bool = (<int *> data)[0]
                     val_list.append(val_bool)
 
-            res = nmsg_message_get_field_flags_by_idx(self._instance, field_idx, &field_flags)
+            with nogil:
+                res = nmsg_message_get_field_flags_by_idx(self._instance, field_idx, &field_flags)
             if res != nmsg_res_success:
                 raise Exception, 'nmsg_message_get_field_flags_by_idx() failed'
             if len(val_list) > 0:

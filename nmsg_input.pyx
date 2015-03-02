@@ -37,11 +37,13 @@ cdef class nullinput(object):
     cdef nmsg_input_t _instance
 
     def __cinit__(self):
-        self._instance = nmsg_input_open_null()
+        with nogil:
+            self._instance = nmsg_input_open_null()
 
     def __dealloc__(self):
-        if self._instance != NULL:
-            nmsg_input_close(&self._instance)
+        with nogil:
+            if self._instance != NULL:
+                nmsg_input_close(&self._instance)
 
     def __repr__(self):
         return 'nmsg nullinput object _instance=0x%x' % <uint64_t> self._instance
@@ -56,7 +58,11 @@ cdef class nullinput(object):
         if self._instance == NULL:
             raise Exception, 'object not initialized'
 
-        res = nmsg_input_read_null(self._instance, <uint8_t *> PyString_AsString(buf), len(buf), NULL, &_msgarray, &n_msg)
+        cdef uint8_t * buf_ptr = <uint8_t *> PyString_AsString(buf)
+        cdef size_t buf_len = len(buf)
+
+        with nogil:
+            res = nmsg_input_read_null(self._instance, buf_ptr, buf_len, NULL, &_msgarray, &n_msg)
 
         if res == nmsg_res_success:
             for i from 0 <= i < n_msg:
@@ -81,7 +87,8 @@ cdef class input(object):
 
     def __dealloc__(self):
         if self._instance != NULL:
-            nmsg_input_close(&self._instance)
+            with nogil:
+                nmsg_input_close(&self._instance)
 
     def __init__(self):
         self.blocking_io = True
@@ -90,16 +97,20 @@ cdef class input(object):
         return 'nmsg input object type=%s _instance=0x%x' % (self.input_type, <uint64_t> self._instance)
 
     cpdef _open_file(self, fileobj):
+        cdef int fileno = fileobj.fileno()
         self.fileobj = fileobj
-        self._instance = nmsg_input_open_file(fileobj.fileno())
+        with nogil:
+            self._instance = nmsg_input_open_file(fileno)
         if self._instance == NULL:
             self.fileobj = None
             raise Exception, 'nmsg_input_open_file() failed'
         self.input_type = 'file'
 
     cpdef _open_sock(self, fileobj):
+        cdef int fileno = fileobj.fileno()
         self.fileobj = fileobj
-        self._instance = nmsg_input_open_sock(fileobj.fileno())
+        with nogil:
+            self._instance = nmsg_input_open_sock(fileno)
         if self._instance == NULL:
             self.fileobj = None
             raise Exception, 'nmsg_input_open_file() failed'
@@ -109,7 +120,8 @@ cdef class input(object):
         return self.fileobj.fileno()
 
     def close(self):
-        nmsg_input_close(&self._instance)
+        with nogil:
+            nmsg_input_close(&self._instance)
         self._instance = NULL
 
     def read(self):
@@ -124,7 +136,8 @@ cdef class input(object):
         res = nmsg_res_failure
 
         while res != nmsg_res_success:
-            res = nmsg_input_read(self._instance, &_msg)
+            with nogil:
+                res = nmsg_input_read(self._instance, &_msg)
             if res == nmsg_res_success:
                 msg = _recv_message()
                 msg.set_instance(_msg)
@@ -179,7 +192,8 @@ cdef class input(object):
     def set_blocking_io(self, bool flag):
         cdef nmsg_res res
 
-        res = nmsg_input_set_blocking_io(self._instance, flag)
+        with nogil:
+            res = nmsg_input_set_blocking_io(self._instance, flag)
         if res != nmsg_res_success:
             raise Exception, 'nmsg_input_set_blocking_io() failed'
         self.blocking_io = flag

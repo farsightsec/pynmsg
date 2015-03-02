@@ -61,8 +61,9 @@ cdef class output(object):
         self._instance = NULL
 
     def __dealloc__(self):
-        if self._instance != NULL:
-            nmsg_output_close(&self._instance)
+        with nogil:
+            if self._instance != NULL:
+                nmsg_output_close(&self._instance)
 
     def __repr__(self):
         return 'nmsg output object type=%s _instance=0x%x' % (self.output_type, <uint64_t> self._instance)
@@ -95,21 +96,25 @@ cdef class output(object):
         nmsg_output_set_filter_msgtype(self._instance, vid, msgtype)
 
     def close(self):
-        nmsg_output_close(&self._instance)
-        self._instance = NULL
+        with nogil:
+            nmsg_output_close(&self._instance)
+            self._instance = NULL
 
     def set_buffered(self, bool buffered):
-        if self._instance != NULL:
-            nmsg_output_set_buffered(self._instance, buffered)
+        with nogil:
+            if self._instance != NULL:
+                nmsg_output_set_buffered(self._instance, buffered)
 
     def set_zlibout(self, bool zlibout):
-        if self._instance != NULL:
-            nmsg_output_set_zlibout(self._instance, zlibout)
+        with nogil:
+            if self._instance != NULL:
+                nmsg_output_set_zlibout(self._instance, zlibout)
 
     def flush(self):
         cdef nmsg_res res
 
-        res = nmsg_output_flush(self._instance)
+        with nogil:
+            res = nmsg_output_flush(self._instance)
         if res != nmsg_res_success:
             raise Exception, 'nmsg_output_flush() failed'
 
@@ -134,8 +139,11 @@ cdef class output(object):
         _msg_instance = msg._instance
         msg._instance = NULL
 
-        res = nmsg_output_write(self._instance, _msg_instance)
+        with nogil:
+            res = nmsg_output_write(self._instance, _msg_instance)
         if res != nmsg_res_success:
-            nmsg_message_destroy(&_msg_instance)
+            with nogil:
+                nmsg_message_destroy(&_msg_instance)
             raise Exception, 'nmsg_output_write() failed'
-        nmsg_message_destroy(&_msg_instance)
+        with nogil:
+            nmsg_message_destroy(&_msg_instance)
