@@ -1,0 +1,16 @@
+Source: pynmsg
+Section: python
+Priority: optional
+Maintainer: Robert S. Edmonds <edmonds@debian.org>
+Build-Depends:
+ debhelper (>= 8~),
+ libnmsg-dev (>= 0.8.0~),
+ python-all-dev (>= 2.6.6-3~),
+ cython (>= 0.15~)
+Standards-Version: 3.9.5
+
+Package: python-nmsg
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
+Description: network message encapsulation library (Python bindings)
+ This package contains the libnmsg Python extension module.

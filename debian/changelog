@@ -1,0 +1,23 @@
+pynmsg (0.3.1-1) debian-farsightsec; urgency=medium
+
+  * New upstream release.
+
+ -- Robert S. Edmonds <edmonds@debian.org>  Mon, 28 Jul 2014 17:00:36 -0400
+
+pynmsg (0.3.0-1) debian-farsightsec; urgency=medium
+
+  * New upstream release.
+
+ -- Robert S. Edmonds <edmonds@debian.org>  Tue, 18 Mar 2014 13:48:30 -0400
+
+pynmsg (0.1-2) debian-rsf; urgency=low
+
+  * Rebuild for wheezy-rsf.
+
+ -- Robert S. Edmonds <edmonds@debian.org>  Wed, 24 Oct 2012 15:42:47 -0400
+
+pynmsg (0.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Robert S. Edmonds <edmonds@debian.org>  Tue, 03 Apr 2012 14:54:34 -0400
