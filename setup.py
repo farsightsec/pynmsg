@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2015 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ except ImportError:
         setup(
             name = NAME,
             version = VERSION,
-            ext_modules = [ Extension('_nmsg', ['_nmsg.c'], **pkgconfig('libnmsg')) ],
+            ext_modules = [ Extension('_nmsg', ['_nmsg.c'], **pkgconfig('libnmsg >= 0.10.0')) ],
             py_modules = ['nmsg'],
         )
     else:
