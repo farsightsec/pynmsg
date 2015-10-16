@@ -15,7 +15,7 @@
 # limitations under the License.
 
 NAME = 'pynmsg'
-VERSION = '0.3.1'
+VERSION = '0.4.0'
 
 from distutils.core import setup
 from distutils.extension import Extension
