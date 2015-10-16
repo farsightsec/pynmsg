@@ -225,7 +225,7 @@ cdef extern from "nmsg.h":
     nmsg_res            nmsg_message_enum_value_to_name_by_idx(nmsg_message_t msg, unsigned field_idx, unsigned value, char **name)
 
     nmsg_input_t        nmsg_input_open_file(int fd)
-    nmsg_input_t        nmsg_input_open_json(int fd)
+    nmsg_input_t        nmsg_input_open_json(int fd) nogil
     nmsg_input_t        nmsg_input_open_sock(int fd)
     nmsg_input_t        nmsg_input_open_null()
     nmsg_res            nmsg_input_close(nmsg_input_t *input)
@@ -255,5 +255,5 @@ cdef extern from "nmsg.h":
 
     nmsg_res            nmsg_ipdg_parse(nmsg_ipdg *, unsigned etype, size_t, unsigned char *pkt)
 
-    nmsg_res            nmsg_message_from_json(char *, nmsg_message_t *)
+    nmsg_res            nmsg_message_from_json(char *, nmsg_message_t *) nogil
     nmsg_res            nmsg_message_to_json(nmsg_message_t, char **)
