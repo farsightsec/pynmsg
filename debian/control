@@ -3,14 +3,14 @@ Section: python
 Priority: optional
 Maintainer: Farsight Security, Inc. <software@farsightsecurity.com>
 Build-Depends:
+ cython (>= 0.15~),
  debhelper (>= 8~),
  libnmsg-dev (>= 0.8.0~),
  python-all-dev (>= 2.6.6-3~),
- cython (>= 0.15~)
 Standards-Version: 3.9.6
 
 Package: python-nmsg
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}
+Depends: ${misc:Depends}, ${python:Depends}, ${shlibs:Depends}
 Description: network message encapsulation library (Python bindings)
  This package contains the libnmsg Python extension module.
