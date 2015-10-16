@@ -5,7 +5,7 @@ Maintainer: Farsight Security, Inc. <software@farsightsecurity.com>
 Build-Depends:
  cython (>= 0.15~),
  debhelper (>= 8~),
- libnmsg-dev (>= 0.8.0~),
+ libnmsg-dev (>= 0.10.0~),
  python-all-dev (>= 2.6.6-3~),
 Standards-Version: 3.9.6
 
