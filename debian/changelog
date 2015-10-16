@@ -1,3 +1,17 @@
+pynmsg (0.4.0-1) debian-farsightsec; urgency=medium
+
+  * New upstream release.
+  * [70f62f67] debian/gbp.conf: Update for debian -> next merge
+  * [7387b042] debian/control: Update Maintainer
+  * [bb1d31f4] debian/control: Update Standards-Version
+  * [f9b53454] debian/: Run "wrap-and-sort -sbt"
+  * [d482967d] debian/control: Bump minimum required libnmsg-dev version to 0.10.0
+  * [ddbf255b] debian/control: Add build dependency on pkg-config
+  * [68b5a279] debian/control: Only build for Python 2.7
+  * [7d218c06] debian/copyright: 2015
+
+ -- Robert Edmonds <edmonds@fsi.io>  Fri, 16 Oct 2015 16:06:33 -0400
+
 pynmsg (0.3.1-1) debian-farsightsec; urgency=medium
 
   * New upstream release.
