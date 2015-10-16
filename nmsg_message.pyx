@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+def message_from_json(s):
+    return _json_message(s)
+
 cdef class message(object):
     cdef msgmod _mod
     cdef nmsg_message_t _instance
@@ -387,6 +390,21 @@ cdef class message(object):
     def keys(self):
         return self.fields.keys()
 
+    from_json = staticmethod(message_from_json)
+
+    def to_json(self):
+        cdef nmsg_res res
+        cdef char *s
+
+        self.sync_message()
+        res = nmsg_message_to_json(self._instance, &s)
+        if res != nmsg_res_success:
+            raise Exception, 'nmsg_message_to_json() failed: %s' % nmsg_res_lookup(res)
+
+        rval = PyString_FromString(s)
+        free(s)
+        return rval
+
 cdef class _recv_message(message):
     def __init__(self):
         pass
@@ -394,3 +412,18 @@ cdef class _recv_message(message):
 cdef class _meta_message(message):
     def __init__(self):
         message.__init__(self, self.__vid, self.__msgtype)
+
+cdef class _json_message(message):
+    def __init__(self, str json):
+        cdef nmsg_res res
+        cdef char *s
+
+        s = PyString_AsString(json)
+        with nogil:
+            res = nmsg_message_from_json(s, &self._instance)
+        if res != nmsg_res_success:
+            raise Exception, 'nmsg_message_from_json() failed: %s' % nmsg_res_lookup(res)
+
+        self._mod = msgmod(nmsg_message_get_vid(self._instance),
+                nmsg_message_get_msgtype(self._instance))
+        self.load_message()

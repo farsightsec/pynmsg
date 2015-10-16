@@ -44,6 +44,7 @@ cdef extern from "time.h":
  
 cdef extern from "Python.h":
     int PyString_AsStringAndSize(object string, char **buffer, Py_ssize_t *length) except -1
+    object PyString_FromString(char *v)
     object PyString_FromStringAndSize(char *v, int len)
     Py_ssize_t PyString_Size(object string)
     char *PyString_AsString(object string)
@@ -224,6 +225,7 @@ cdef extern from "nmsg.h":
     nmsg_res            nmsg_message_enum_value_to_name_by_idx(nmsg_message_t msg, unsigned field_idx, unsigned value, char **name)
 
     nmsg_input_t        nmsg_input_open_file(int fd)
+    nmsg_input_t        nmsg_input_open_json(int fd)
     nmsg_input_t        nmsg_input_open_sock(int fd)
     nmsg_input_t        nmsg_input_open_null()
     nmsg_res            nmsg_input_close(nmsg_input_t *input)
@@ -236,6 +238,7 @@ cdef extern from "nmsg.h":
     nmsg_res            nmsg_input_set_blocking_io(nmsg_input_t input, bool flag)
 
     nmsg_output_t       nmsg_output_open_file(int fd, size_t bufsz)
+    nmsg_output_t       nmsg_output_open_json(int fd)
     nmsg_output_t       nmsg_output_open_sock(int fd, size_t bufsz)
     nmsg_output_t       nmsg_output_open_callback(nmsg_cb_message cb, void *user)
     nmsg_res            nmsg_output_flush(nmsg_output_t output)
@@ -251,3 +254,6 @@ cdef extern from "nmsg.h":
     void                nmsg_output_set_zlibout(nmsg_output_t output, bool zlibout)
 
     nmsg_res            nmsg_ipdg_parse(nmsg_ipdg *, unsigned etype, size_t, unsigned char *pkt)
+
+    nmsg_res            nmsg_message_from_json(char *, nmsg_message_t *)
+    nmsg_res            nmsg_message_to_json(nmsg_message_t, char **)

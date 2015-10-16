@@ -22,6 +22,14 @@ def output_open_file(obj, size_t bufsz=NMSG_WBUFSZ_MAX):
     o.fileobj = obj
     return o
 
+def output_open_json(obj):
+    if type(obj) == str:
+        obj = open(obj, 'w')
+    o = output()
+    o._open_json(obj)
+    o.fileobj = obj
+    return o
+
 def output_open_sock(addr, port, size_t bufsz=NMSG_WBUFSZ_ETHER, broadcast=False):
     obj = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     obj.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -54,6 +62,7 @@ cdef class output(object):
     cdef str output_type
 
     open_file = staticmethod(output_open_file)
+    open_json = staticmethod(output_open_json)
     open_sock = staticmethod(output_open_sock)
     open_callback = staticmethod(output_open_callback)
 
@@ -72,6 +81,12 @@ cdef class output(object):
         if self._instance == NULL:
             raise Exception, 'nmsg_output_open_file() failed'
         self.output_type = 'file'
+
+    cpdef _open_json(self, fileobj):
+        self._instance = nmsg_output_open_json(fileobj.fileno())
+        if self._instance == NULL:
+            raise Exception, 'nmsg_output_open_json() failed'
+        self.output_type = 'json'
 
     cpdef _open_sock(self, fileobj, size_t bufsz):
         self._instance = nmsg_output_open_sock(fileobj.fileno(), bufsz)

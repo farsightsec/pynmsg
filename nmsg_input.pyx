@@ -21,6 +21,13 @@ def input_open_file(obj):
     i._open_file(obj)
     return i
 
+def input_open_json(obj):
+    if type(obj) == str:
+        obj = open(obj)
+    i = input()
+    i._open_json(obj)
+    return i
+
 def input_open_sock(addr, port):
     obj = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     obj.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -74,6 +81,7 @@ cdef class input(object):
     cdef bool blocking_io
 
     open_file = staticmethod(input_open_file)
+    open_json = staticmethod(input_open_json)
     open_sock = staticmethod(input_open_sock)
 
     def __cinit__(self):
@@ -96,6 +104,16 @@ cdef class input(object):
             self.fileobj = None
             raise Exception, 'nmsg_input_open_file() failed'
         self.input_type = 'file'
+
+    cpdef _open_json(self, fileobj):
+        cdef int fileno = fileobj.fileno()
+        self.fileobj = fileobj
+        with nogil:
+            self._instance = nmsg_input_open_json(fileno)
+        if self._instance == NULL:
+            self.fileobj = None
+            raise Exception, 'nmsg_input_open_json() failed'
+        self.input_type = 'json'
 
     cpdef _open_sock(self, fileobj):
         self.fileobj = fileobj
