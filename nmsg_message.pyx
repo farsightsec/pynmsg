@@ -70,7 +70,7 @@ cdef class message(object):
             self.changed = True
 
     cdef set_instance(self, nmsg_message_t instance):
-        cdef char *a
+        cdef const char *a
         cdef timespec ts
         cdef uint32_t u
 
@@ -145,12 +145,12 @@ cdef class message(object):
     cdef load_message(self):
         cdef nmsg_res res
         cdef size_t n_fields
-        cdef char *field_name
+        cdef const char *field_name
         cdef nmsg_msgmod_field_type field_type
         cdef unsigned field_flags
 
         cdef unsigned val_enum
-        cdef char *str_enum
+        cdef const char *str_enum
         cdef int val_bool
         cdef uint32_t val_uint32
         cdef uint64_t val_uint64
