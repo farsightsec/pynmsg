@@ -19,12 +19,15 @@ class _msgtype(object):
         cdef char *vname_str
         cdef char *mname_str
 
+        self.types = dict()
+
         for vid from 1 <= vid <= nmsg_msgmod_get_max_vid():
             vname_str = nmsg_msgmod_vid_to_vname(vid)
 
             if vname_str:
                 vname = str(vname_str).lower()
                 v_dict = {}
+                self.types[vname] = list()
 
                 for msgtype from 1 <= msgtype <= nmsg_msgmod_get_max_msgtype(vid):
                     mname_str = nmsg_msgmod_msgtype_to_mname(vid, msgtype)
@@ -37,6 +40,7 @@ class _msgtype(object):
                             '__msgtype': msgtype,
                         }
                         v_dict[mname] = type('%s_%s' % (vname, mname), (_meta_message,), m_dict)
+                    self.types[vname].append(mname)
                 v_dict['_vname'] = vname
                 v_dict['_vid'] = vid
 
