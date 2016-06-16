@@ -53,8 +53,10 @@ cdef class nullinput(object):
     def __repr__(self):
         return 'nmsg nullinput object _instance=0x%x' % <uint64_t> self._instance
 
-    def read(self, str buf):
+    def read(self, str buf, tv_sec=None, tv_nsec=None):
         cdef nmsg_res res
+        cdef timespec ts
+        cdef timespec *tsp
         cdef nmsg_message_t *_msgarray
         cdef size_t n_msg
         cdef _recv_message msg
@@ -63,7 +65,14 @@ cdef class nullinput(object):
         if self._instance == NULL:
             raise Exception, 'object not initialized'
 
-        res = nmsg_input_read_null(self._instance, <uint8_t *> PyString_AsString(buf), len(buf), NULL, &_msgarray, &n_msg)
+        if tv_sec is not None and tv_nsec is not None:
+            ts.tv_sec = tv_sec
+            ts.tv_nsec = tv_nsec
+            tsp = &ts
+        else:
+            tsp = NULL
+
+        res = nmsg_input_read_null(self._instance, <uint8_t *> PyString_AsString(buf), len(buf), tsp, &_msgarray, &n_msg)
 
         if res == nmsg_res_success:
             for i from 0 <= i < n_msg:
@@ -71,6 +80,8 @@ cdef class nullinput(object):
                 msg.set_instance(_msgarray[i])
                 msg_list.append(msg)
             free(_msgarray)
+        else:
+            raise Exception, 'nmsg_input_null() failed: %s' % nmsg_res_lookup(res)
 
         return msg_list
 
