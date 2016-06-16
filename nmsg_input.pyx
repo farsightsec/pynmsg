@@ -53,7 +53,7 @@ cdef class nullinput(object):
     def __repr__(self):
         return 'nmsg nullinput object _instance=0x%x' % <uint64_t> self._instance
 
-    def read(self, str buf, tv_sec=None, tv_nsec=None):
+    def read(self, str buf, tv=None):
         cdef nmsg_res res
         cdef timespec ts
         cdef timespec *tsp
@@ -65,9 +65,11 @@ cdef class nullinput(object):
         if self._instance == NULL:
             raise Exception, 'object not initialized'
 
-        if tv_sec is not None and tv_nsec is not None:
-            ts.tv_sec = tv_sec
-            ts.tv_nsec = tv_nsec
+        if tv is not None:
+            if not isinstance(tv, numbers.Real):
+                raise ValueError('tv must be a real number')
+            ts.tv_sec = int(tv)
+            ts.tv_nsec = tv - int(tv)
             tsp = &ts
         else:
             tsp = NULL
