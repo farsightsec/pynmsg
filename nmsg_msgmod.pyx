@@ -87,8 +87,7 @@ cdef class msgmod(object):
 
     def __dealloc__(self):
         if self._instance != NULL:
-            with nogil:
-                nmsg_msgmod_fini(self._instance, &self._clos)
+            nmsg_msgmod_fini(self._instance, &self._clos)
 
     def __str__(self):
         return '[%d:%d %s %s] message module' % (

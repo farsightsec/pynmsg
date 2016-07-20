@@ -61,9 +61,8 @@ cdef class output(object):
         self._instance = NULL
 
     def __dealloc__(self):
-        with nogil:
-            if self._instance != NULL:
-                nmsg_output_close(&self._instance)
+        if self._instance != NULL:
+            nmsg_output_close(&self._instance)
 
     def __repr__(self):
         return 'nmsg output object type=%s _instance=0x%x' % (self.output_type, <uint64_t> self._instance)
@@ -96,9 +95,8 @@ cdef class output(object):
         nmsg_output_set_filter_msgtype(self._instance, vid, msgtype)
 
     def close(self):
-        with nogil:
-            nmsg_output_close(&self._instance)
-            self._instance = NULL
+        nmsg_output_close(&self._instance)
+        self._instance = NULL
 
     def set_buffered(self, bool buffered):
         with nogil:

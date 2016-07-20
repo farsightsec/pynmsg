@@ -43,9 +43,8 @@ cdef class nullinput(object):
         self.lock = threading.RLock()
 
     def __dealloc__(self):
-        with nogil:
-            if self._instance != NULL:
-                nmsg_input_close(&self._instance)
+        if self._instance != NULL:
+            nmsg_input_close(&self._instance)
 
     def __repr__(self):
         return 'nmsg nullinput object _instance=0x%x' % <uint64_t> self._instance
@@ -90,8 +89,7 @@ cdef class input(object):
 
     def __dealloc__(self):
         if self._instance != NULL:
-            with nogil:
-                nmsg_input_close(&self._instance)
+            nmsg_input_close(&self._instance)
 
     def __init__(self):
         self.blocking_io = True
@@ -123,8 +121,7 @@ cdef class input(object):
         return self.fileobj.fileno()
 
     def close(self):
-        with nogil:
-            nmsg_input_close(&self._instance)
+        nmsg_input_close(&self._instance)
         self._instance = NULL
 
     def read(self):
