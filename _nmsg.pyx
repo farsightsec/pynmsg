@@ -16,6 +16,7 @@
 
 import os
 import socket
+import threading
 import time
 
 include "nmsg.pxi"

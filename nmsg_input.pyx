@@ -35,10 +35,12 @@ def input_open_sock(addr, port):
 
 cdef class nullinput(object):
     cdef nmsg_input_t _instance
+    cdef object lock
 
     def __cinit__(self):
         with nogil:
             self._instance = nmsg_input_open_null()
+        self.lock = threading.RLock()
 
     def __dealloc__(self):
         with nogil:
@@ -61,8 +63,9 @@ cdef class nullinput(object):
         cdef uint8_t * buf_ptr = <uint8_t *> PyString_AsString(buf)
         cdef size_t buf_len = len(buf)
 
-        with nogil:
-            res = nmsg_input_read_null(self._instance, buf_ptr, buf_len, NULL, &_msgarray, &n_msg)
+        with self.lock:
+            with nogil:
+                res = nmsg_input_read_null(self._instance, buf_ptr, buf_len, NULL, &_msgarray, &n_msg)
 
         if res == nmsg_res_success:
             for i from 0 <= i < n_msg:
