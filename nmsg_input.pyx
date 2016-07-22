@@ -40,7 +40,7 @@ cdef class nullinput(object):
     def __cinit__(self):
         with nogil:
             self._instance = nmsg_input_open_null()
-        self.lock = threading.RLock()
+        self.lock = threading.Lock()
 
     def __dealloc__(self):
         if self._instance != NULL:
@@ -80,12 +80,14 @@ cdef class input(object):
     cdef object fileobj
     cdef str input_type
     cdef bool blocking_io
+    cdef object lock
 
     open_file = staticmethod(input_open_file)
     open_sock = staticmethod(input_open_sock)
 
     def __cinit__(self):
         self._instance = NULL
+        self.lock = threading.Lock()
 
     def __dealloc__(self):
         if self._instance != NULL:
@@ -136,8 +138,9 @@ cdef class input(object):
         res = nmsg_res_failure
 
         while res != nmsg_res_success:
-            with nogil:
-                res = nmsg_input_read(self._instance, &_msg)
+            with self.lock:
+                with nogil:
+                    res = nmsg_input_read(self._instance, &_msg)
             if res == nmsg_res_success:
                 msg = _recv_message()
                 msg.set_instance(_msg)

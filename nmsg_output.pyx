@@ -52,6 +52,7 @@ cdef class output(object):
     cdef public object fileobj
     cdef public object func
     cdef str output_type
+    cdef object lock
 
     open_file = staticmethod(output_open_file)
     open_sock = staticmethod(output_open_sock)
@@ -59,6 +60,7 @@ cdef class output(object):
 
     def __cinit__(self):
         self._instance = NULL
+        self.lock = threading.Lock()
 
     def __dealloc__(self):
         if self._instance != NULL:
@@ -137,8 +139,9 @@ cdef class output(object):
         _msg_instance = msg._instance
         msg._instance = NULL
 
-        with nogil:
-            res = nmsg_output_write(self._instance, _msg_instance)
+        with self.lock:
+            with nogil:
+                res = nmsg_output_write(self._instance, _msg_instance)
         if res != nmsg_res_success:
             with nogil:
                 nmsg_message_destroy(&_msg_instance)
