@@ -94,7 +94,7 @@ cdef class io(object):
             raise Exception, 'lookup of channel %s failed'
 
     def add_output(self, output o):
-        cdef nmsg_res
+        cdef nmsg_res res
 
         if o._instance == NULL:
             raise Exception, 'output object not initialized'

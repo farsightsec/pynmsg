@@ -70,7 +70,7 @@ cdef class msgmod(object):
     mname_to_msgtype = staticmethod(msgmod_mname_to_msgtype)
 
     def __cinit__(self, unsigned vid, unsigned msgtype):
-        cdef nmsg_res
+        cdef nmsg_res res
 
         with nogil:
             self._instance = nmsg_msgmod_lookup(vid, msgtype)
