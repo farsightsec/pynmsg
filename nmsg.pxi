@@ -43,11 +43,6 @@ cdef extern from "time.h":
         long tv_nsec
  
 cdef extern from "Python.h":
-    int PyString_AsStringAndSize(object string, char **buffer, Py_ssize_t *length) except -1
-    object PyString_FromString(char *v)
-    object PyString_FromStringAndSize(char *v, int len)
-    Py_ssize_t PyString_Size(object string)
-    char *PyString_AsString(object string)
     void Py_INCREF(object)
     void Py_DECREF(object)
     void PyEval_InitThreads()
@@ -230,7 +225,7 @@ cdef extern from "nmsg.h":
     nmsg_input_t        nmsg_input_open_null()
     nmsg_res            nmsg_input_close(nmsg_input_t *input)
     nmsg_res            nmsg_input_read(nmsg_input_t input, nmsg_message_t *msg)
-    nmsg_res            nmsg_input_read_null(nmsg_input_t input, uint8_t *buf, size_t buf_len, timespec *ts, nmsg_message_t **msgarray, size_t *n_msg)
+    nmsg_res            nmsg_input_read_null(nmsg_input_t input, uint8_t *buf, size_t buf_len, timespec *ts, nmsg_message_t **msgarray, size_t *n_msg) nogil
     void                nmsg_input_set_filter_msgtype(nmsg_input_t input, unsigned vid, unsigned msgtype)
     void                nmsg_input_set_filter_source(nmsg_input_t input, unsigned source)
     void                nmsg_input_set_filter_operator(nmsg_input_t input, unsigned operator)
