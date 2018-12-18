@@ -49,7 +49,7 @@ cdef extern from "Python.h":
     int PyErr_CheckSignals()
     int PyErr_ExceptionMatches(object)
 
-cdef extern from "nmsg.h":
+cdef extern from "nmsg.h" nogil:
     cdef enum:
         NMSG_WBUFSZ_MIN = 512
         NMSG_WBUFSZ_MAX = 1048576
@@ -182,7 +182,7 @@ cdef extern from "nmsg.h":
 
     unsigned            nmsg_msgmod_get_max_vid()
     unsigned            nmsg_msgmod_get_max_msgtype(unsigned vid)
-    char *              nmsg_msgmod_vid_to_vname(unsigned vid)
+    const char *        nmsg_msgmod_vid_to_vname(unsigned vid)
     char *              nmsg_msgmod_msgtype_to_mname(unsigned vid, unsigned msgtype)
     nmsg_msgmod_t       nmsg_msgmod_lookup(unsigned vid, unsigned msgtype)
     nmsg_msgmod_t       nmsg_msgmod_lookup_byname(char *vname, char *mname)
@@ -219,9 +219,9 @@ cdef extern from "nmsg.h":
     nmsg_res            nmsg_message_enum_value_to_name(nmsg_message_t msg, char *field_name, unsigned value, char **name)
     nmsg_res            nmsg_message_enum_value_to_name_by_idx(nmsg_message_t msg, unsigned field_idx, unsigned value, char **name)
 
-    nmsg_input_t        nmsg_input_open_file(int fd)
+    nmsg_input_t        nmsg_input_open_file(int fd) nogil
     nmsg_input_t        nmsg_input_open_json(int fd) nogil
-    nmsg_input_t        nmsg_input_open_sock(int fd)
+    nmsg_input_t        nmsg_input_open_sock(int fd) nogil
     nmsg_input_t        nmsg_input_open_null()
     nmsg_res            nmsg_input_close(nmsg_input_t *input)
     nmsg_res            nmsg_input_read(nmsg_input_t input, nmsg_message_t *msg)

@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import threading
 
 def input_open_file(obj):
     if type(obj) == str:
@@ -42,9 +43,13 @@ def input_open_sock(addr, port):
 
 cdef class nullinput(object):
     cdef nmsg_input_t _instance
+    cdef object lock
 
     def __cinit__(self):
         self._instance = nmsg_input_open_null()
+
+    def __init__(self):
+        self.lock = threading.Lock()
 
     def __dealloc__(self):
         if self._instance != NULL:
@@ -84,6 +89,7 @@ cdef class input(object):
     cdef object fileobj
     cdef str input_type
     cdef bool blocking_io
+    cdef object lock
 
     open_file = staticmethod(input_open_file)
     open_json = staticmethod(input_open_json)
@@ -91,6 +97,7 @@ cdef class input(object):
 
     def __cinit__(self):
         self._instance = NULL
+        self.lock = threading.Lock()
 
     def __dealloc__(self):
         if self._instance != NULL:
@@ -147,7 +154,9 @@ cdef class input(object):
         res = nmsg_res_failure
 
         while res != nmsg_res_success:
-            res = nmsg_input_read(self._instance, &_msg)
+            with self.lock:
+                with nogil:
+                    res = nmsg_input_read(self._instance, &_msg)
             if res == nmsg_res_success:
                 msg = _recv_message()
                 msg.set_instance(_msg)

@@ -15,7 +15,7 @@
 # limitations under the License.
 
 def msgmod_get_max_msgtype(unsigned vid):
-    cdef char *vname
+    cdef const char *vname
     vname = nmsg_msgmod_vid_to_vname(vid)
     if vname == NULL:
         raise Exception, 'unknown vendor ID'
@@ -23,12 +23,12 @@ def msgmod_get_max_msgtype(unsigned vid):
         return nmsg_msgmod_get_max_msgtype(vid)
 
 def msgmod_vid_to_vname(unsigned vid):
-    cdef char *vname
+    cdef const char *vname
     vname = nmsg_msgmod_vid_to_vname(vid)
     if vname == NULL:
         raise Exception, 'unknown vendor ID'
     else:
-        return str(vname)
+        return vname.decode('utf-8')
 
 def msgmod_vname_to_vid(char *vname):
     cdef unsigned vid
@@ -38,12 +38,12 @@ def msgmod_vname_to_vid(char *vname):
     return vid
 
 def msgmod_msgtype_to_mname(unsigned vid, unsigned msgtype):
-    cdef char *mname
+    cdef const char *mname
     mname = nmsg_msgmod_msgtype_to_mname(vid, msgtype)
     if mname == NULL:
         raise Exception, 'unknown message type'
     else:
-        return str(mname)
+        return mname.decode('utf-8')
 
 def msgmod_mname_to_msgtype(unsigned vid, char *mname):
     cdef unsigned msgtype
@@ -65,7 +65,7 @@ cdef class msgmod(object):
     mname_to_msgtype = staticmethod(msgmod_mname_to_msgtype)
 
     def __cinit__(self, unsigned vid, unsigned msgtype):
-        cdef nmsg_res
+        cdef nmsg_res res
 
         self._instance = nmsg_msgmod_lookup(vid, msgtype)
         if self._instance != NULL:

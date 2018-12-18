@@ -18,6 +18,6 @@ import sys
 flags = sys.getdlopenflags()
 sys.setdlopenflags(flags | ctypes.RTLD_GLOBAL)
 
-from _nmsg import *
+from _nmsg import *  # NOQA
 
 sys.setdlopenflags(flags)

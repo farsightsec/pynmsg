@@ -13,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from cysignals.signals cimport sig_check
 
 cdef class io(object):
     cdef nmsg_io_t _instance
@@ -34,12 +35,16 @@ cdef class io(object):
         if self._instance != NULL:
             nmsg_io_destroy(&self._instance)
 
+    def abort_loop(self, signal, frame):
+        print("abort")
+
     def __init__(self):
         self.filter_vid = 0
         self.filter_msgtype = 0
         self.filter_source = 0
         self.inputs = []
         self.outputs = []
+        _giveup = 0
 
         self._instance = nmsg_io_init()
         if self._instance == NULL:
@@ -70,7 +75,7 @@ cdef class io(object):
         for f in chalias_fnames:
             if os.path.isfile(f):
                 fname = f
-        if fname == None:
+        if fname is None:
             raise Exception, 'unable to locate nmsg channel alias file'
 
         found_channel = False
@@ -92,7 +97,7 @@ cdef class io(object):
             raise Exception, 'lookup of channel %s failed'
 
     def add_output(self, output o):
-        cdef nmsg_res
+        cdef nmsg_res res
 
         if o._instance == NULL:
             raise Exception, 'output object not initialized'
@@ -109,7 +114,15 @@ cdef class io(object):
         cdef output o
         cdef nmsg_res res
 
-        o = output.open_callback(fn)
+        def wrapper(msg):
+            try:
+                sig_check()
+                fn(msg)
+            except KeyboardInterrupt:
+                self.break_loop()
+                raise KeyboardInterrupt
+
+        o = output.open_callback(wrapper)
         self.add_output(o)
 
     def set_filter_msgtype(self, vid, msgtype):
@@ -124,16 +137,16 @@ cdef class io(object):
     def set_filter_source(self, unsigned source):
         self.filter_source = source
 
-    def set_filter_operator(self, bytes s_operator):                   
+    def set_filter_operator(self, bytes s_operator):
         operator = nmsg_alias_by_value(nmsg_alias_operator, s_operator)
         if operator == 0:
-            raise Exception, 'unknown operator %r' % s_operator        
+            raise Exception, 'unknown operator %r' % s_operator
         self.filter_operator = s_operator
 
     def set_filter_group(self, bytes s_group):
-        group = nmsg_alias_by_value(nmsg_alias_group, s_group)         
+        group = nmsg_alias_by_value(nmsg_alias_group, s_group)
         if group == 0:
-            raise Exception, 'unknown group %r' % s_group              
+            raise Exception, 'unknown group %r' % s_group
         self.filter_group = s_group
 
     def loop(self):

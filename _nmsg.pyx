@@ -1,4 +1,5 @@
-#cython: embedsignature=True
+# cython: embedsignature=True
+# cython: language_level=2
 
 # Copyright (c) 2009-2014 by Farsight Security, Inc.
 #
@@ -17,6 +18,7 @@
 import os
 import socket
 import time
+import threading
 
 include "nmsg.pxi"
 

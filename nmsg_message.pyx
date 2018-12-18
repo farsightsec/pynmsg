@@ -70,7 +70,7 @@ cdef class message(object):
             self.changed = True
 
     cdef set_instance(self, nmsg_message_t instance):
-        cdef char *a
+        cdef const char *a
         cdef timespec ts
         cdef uint32_t u
 
@@ -108,7 +108,7 @@ cdef class message(object):
             if a != NULL:
                 self.group = a
             else:
-                self.group = b'<UNKNOWN>'   
+                self.group = b'<UNKNOWN>'
         else:
             self.group = None
 
@@ -145,12 +145,12 @@ cdef class message(object):
     cdef load_message(self):
         cdef nmsg_res res
         cdef size_t n_fields
-        cdef char *field_name
+        cdef const char *field_name
         cdef nmsg_msgmod_field_type field_type
         cdef unsigned field_flags
 
         cdef unsigned val_enum
-        cdef char *str_enum
+        cdef const char *str_enum
         cdef int val_bool
         cdef uint32_t val_uint32
         cdef uint64_t val_uint64
@@ -173,7 +173,8 @@ cdef class message(object):
             if res != nmsg_res_success:
                 raise Exception, 'nmsg_message_get_field_name() failed'
 
-            self.field_names.add(field_name)
+            field_name_dec = field_name.decode('utf-8')
+            self.field_names.add(field_name_dec)
 
             res = nmsg_message_get_field_type_by_idx(self._instance, field_idx, &field_type)
             if res != nmsg_res_success:
@@ -190,12 +191,11 @@ cdef class message(object):
                 if res != nmsg_res_success:
                     break
                 val_idx += 1
-
                 if field_type == nmsg_msgmod_ft_enum:
                     val_enum = (<unsigned *> data)[0]
                     res = nmsg_message_enum_value_to_name_by_idx(self._instance, field_idx, val_enum, &str_enum)
                     if res == nmsg_res_success:
-                        val_list.append(<bytes> str_enum)
+                        val_list.append(str_enum.decode('utf-8'))
                     else:
                         val_list.append(val_enum)
 
@@ -243,10 +243,10 @@ cdef class message(object):
                 raise Exception, 'nmsg_message_get_field_flags_by_idx() failed'
             if len(val_list) > 0:
                 if field_flags & NMSG_MSGMOD_FIELD_REPEATED:
-                    self.fields[field_name] = val_list
+                    self.fields[field_name_dec] = val_list
                 else:
-                    self.fields[field_name] = val_list[0]
-            self.field_types[field_name] = field_type
+                    self.fields[field_name_dec] = val_list[0]
+            self.field_types[field_name_dec] = field_type
 
     cdef sync_message(self):
         cdef nmsg_res res
@@ -280,13 +280,19 @@ cdef class message(object):
                 fields = [ self.fields[field_name] ]
 
             for i in range(0, len(fields)):
+                if type(fields[i]) == bytes:
+                    fields_enc = fields[i]
+                else:
+                    fields_enc = fields[i].encode('utf-8')
                 if field_type == nmsg_msgmod_ft_enum:
                     if type(fields[i]) == int:
-                        val_enum = fields[i]
+                        val_enum = fields_enc
                         data = <uint8_t *> &val_enum
                         data_len = sizeof(val_enum)
-                    elif type(fields[i]) == str:
-                        res = nmsg_message_enum_name_to_value(self._instance, field_name, fields[i], &val_enum)
+                    elif type(fields[i]) == str or type(fields[i]) == unicode:
+                        tmp = field_name.encode('utf-8')
+                        res = nmsg_message_enum_name_to_value(self._instance, tmp,
+                                                              fields_enc, &val_enum)
                         if res != nmsg_res_success:
                             raise Exception, 'unknown enum value for field_name=%s: %s' % (field_name, fields[i])
                         data = <uint8_t *> &val_enum
@@ -295,11 +301,11 @@ cdef class message(object):
                         raise Exception, 'unhandled python enum type: %s' % type(fields[i])
 
                 elif field_type == nmsg_msgmod_ft_bytes:
-                    data = fields[i]
+                    data = fields_enc
                     data_len = len(data)
 
                 elif field_type == nmsg_msgmod_ft_string or field_type == nmsg_msgmod_ft_mlstring:
-                    tmp_py_string = fields[i] + '\x00'
+                    tmp_py_string = fields_enc + '\x00'
                     data = tmp_py_string
                     data_len = len(data)
 
@@ -312,49 +318,50 @@ cdef class message(object):
                     data_len = len(data)
 
                 elif field_type == nmsg_msgmod_ft_uint16:
-                    val_uint16 = fields[i]
+                    val_uint16 = fields_enc
                     data = <uint8_t *> &val_uint16
                     data_len = sizeof(val_uint16)
 
                 elif field_type == nmsg_msgmod_ft_int16:
-                    val_int16 = fields[i]
+                    val_int16 = fields_enc
                     data = <uint8_t *> &val_int16
                     data_len = sizeof(val_int16)
 
                 elif field_type == nmsg_msgmod_ft_uint32:
-                    val_uint32 = fields[i]
+                    val_uint32 = fields_enc
                     data = <uint8_t *> &val_uint32
                     data_len = sizeof(val_uint32)
 
                 elif field_type == nmsg_msgmod_ft_int32:
-                    val_int32 = fields[i]
+                    val_int32 = fields_enc
                     data = <uint8_t *> &val_int32
                     data_len = sizeof(val_int32)
 
                 elif field_type == nmsg_msgmod_ft_uint64:
-                    val_uint64 = fields[i]
+                    val_uint64 = fields_enc
                     data = <uint8_t *> &val_uint64
                     data_len = sizeof(val_uint64)
 
                 elif field_type == nmsg_msgmod_ft_int64:
-                    val_int64 = fields[i]
+                    val_int64 = fields_enc
                     data = <uint8_t *> &val_int64
                     data_len = sizeof(val_int64)
 
                 elif field_type == nmsg_msgmod_ft_double:
-                    val_double = fields[i]
+                    val_double = fields_enc
                     data = <uint8_t *> &val_double
                     data_len = sizeof(val_double)
 
                 elif field_type == nmsg_msgmod_ft_bool:
-                    val_bool = fields[i]
+                    val_bool = fields_enc
                     data = <uint8_t *> &val_bool
                     data_len = sizeof(int)
 
                 else:
                     raise Exception, 'unknown field_type'
 
-                res = nmsg_message_set_field(self._instance, field_name, i, data, data_len)
+                tmp = field_name.encode('utf-8')
+                res = nmsg_message_set_field(self._instance, tmp, i, data, data_len)
                 if res != nmsg_res_success:
                     raise Exception, 'nmsg_message_set_field() failed'
 

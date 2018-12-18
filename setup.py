@@ -13,12 +13,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import print_function
+
+from distutils.core import setup
+from distutils.extension import Extension
 
 NAME = 'pynmsg'
 VERSION = '0.4.0'
 
-from distutils.core import setup
-from distutils.extension import Extension
 
 def pkgconfig(*packages, **kw):
     import subprocess
@@ -34,8 +36,9 @@ def pkgconfig(*packages, **kw):
         '--libs',
         ' '.join(packages),
     )
-    
-    pkg_config_output = subprocess.check_output(pkg_config_cmd, universal_newlines=True)
+
+    pkg_config_output = subprocess.check_output(pkg_config_cmd,
+                                                universal_newlines=True)
     for token in pkg_config_output.split():
         flag = token[:2]
         arg = token[2:]
@@ -44,36 +47,36 @@ def pkgconfig(*packages, **kw):
     return kw
 
 try:
-    from Cython.Distutils import build_ext
-    setup(
-        name = NAME,
-        version = VERSION,
-        ext_modules = [
-            Extension('_nmsg', ['_nmsg.pyx'],
-                depends = [
-                    'nmsg.pxi',
-                    'nmsg_input.pyx',
-                    'nmsg_io.pyx',
-                    'nmsg_message.pyx',
-                    'nmsg_msgmod.pyx',
-                    'nmsg_msgtype.pyx',
-                    'nmsg_output.pyx',
-                    'nmsg_util.pyx',
-                ],
-                **pkgconfig('libnmsg')
-            )
-        ],
-        cmdclass = {'build_ext': build_ext},
-        py_modules = ['nmsg'],
-    )
+    from Cython.Build import build_ext, cythonize
+    from distutils.extension import Extension
+    extensions = [Extension("_nmsg", ['_nmsg.pyx'],
+                            depends=[
+                                'nmsg.pxi',
+                                'nmsg_input.pyx',
+                                'nmsg_io.pyx',
+                                'nmsg_message.pyx',
+                                'nmsg_msgmod.pyx',
+                                'nmsg_msgtype.pyx',
+                                'nmsg_output.pyx',
+                                'nmsg_util.pyx',
+                            ],
+                            **pkgconfig('libnmsg >= 0.10.0')
+                            )]
+
+    setup(ext_modules=cythonize(extensions),
+          name=NAME,
+          version=VERSION,
+          py_modules=['nmsg']
+          )
 except ImportError:
     import os
     if os.path.isfile('_nmsg.c'):
         setup(
-            name = NAME,
-            version = VERSION,
-            ext_modules = [ Extension('_nmsg', ['_nmsg.c'], **pkgconfig('libnmsg >= 0.10.0')) ],
-            py_modules = ['nmsg'],
+            name=NAME,
+            version=VERSION,
+            ext_modules=[Extension('_nmsg', ['_nmsg.c'],
+                                   **pkgconfig('libnmsg >= 0.10.0'))],
+            py_modules=['nmsg'],
         )
     else:
         raise
