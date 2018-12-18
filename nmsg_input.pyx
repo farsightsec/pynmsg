@@ -41,9 +41,11 @@ def input_open_sock(addr, port):
     i._open_sock(obj)
     return i
 
-cdef class nullinput(object):
+cdef class nullinput(object, tv_sec=None, tv_nsec=None):
     cdef nmsg_input_t _instance
     cdef object lock
+    cdef timespec ts
+    cdef timespec *tsp
 
     def __cinit__(self):
         self._instance = nmsg_input_open_null()
@@ -70,10 +72,17 @@ cdef class nullinput(object):
 
         cdef uint8_t * buf_ptr = <uint8_t *> buf
         cdef size_t buf_len = len(buf)
-        
+
+        if tv_sec is not None and tv_nsec is not None:
+            ts.tv_sec = tv_sec
+            ts.tv_nsec = tv_nsec
+            tsp = &ts
+        else:
+            tsp = NULL
+
         with self.lock:
             with nogil:
-                res = nmsg_input_read_null(self._instance, buf_ptr, buf_len, NULL, &_msgarray, &n_msg)
+                res = nmsg_input_read_null(self._instance, buf_ptr, buf_len, tsp, &_msgarray, &n_msg)
 
         if res == nmsg_res_success:
             for i from 0 <= i < n_msg:
@@ -81,6 +90,8 @@ cdef class nullinput(object):
                 msg.set_instance(_msgarray[i])
                 msg_list.append(msg)
             free(_msgarray)
+        else:
+            raise Exception, 'nmsg_input_null() failed: %s' % nmsg_res_lookup(res)
 
         return msg_list
 
