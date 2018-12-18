@@ -8,10 +8,35 @@ C library.
 Building
 --------
 
-Building from a git checkout requires a C compiler, Python, Cython, and the
+Building from a git checkout requires a C compiler, Python, Cython, Cysignals, and the
 `nmsg` library to be installed first. Distribution tarballs ship with a copy of
 the Cython-generated code and do not require Cython to actually be installed.
 
 `pynmsg` is built by running `setup.py`:
 
     python setup.py build
+
+
+Python Performance
+------------------
+
+Reading from a socket suffers about 75% loss (send 1723300 messages, recv ~400k)
+
+
+C Performance
+-------------
+
+Using nmsgtool to read from a file, write to a localhost socket with another nmsgtool reading
+from the localhost socket:
+
+writer sends: 1723300 messages
+
+reader reads:
+
+| run# |   read  | loss|
+|-----|---------|-----|
+|1   |  1717510  | <1%|
+|2   |  1710776  | <1%|
+|3   |  1709553  | <1%|
+|4   |  1666319  |~3%|
+
