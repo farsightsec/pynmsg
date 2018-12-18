@@ -1,3 +1,17 @@
+# Copyright (c) 2009-2014 by Farsight Security, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 cdef extern from "stdio.h":
     ctypedef void FILE
     FILE *stdout
@@ -206,6 +220,7 @@ cdef extern from "nmsg.h":
     nmsg_res            nmsg_message_enum_value_to_name_by_idx(nmsg_message_t msg, unsigned field_idx, unsigned value, char **name)
 
     nmsg_input_t        nmsg_input_open_file(int fd)
+    nmsg_input_t        nmsg_input_open_json(int fd) nogil
     nmsg_input_t        nmsg_input_open_sock(int fd)
     nmsg_input_t        nmsg_input_open_null()
     nmsg_res            nmsg_input_close(nmsg_input_t *input)
@@ -218,6 +233,7 @@ cdef extern from "nmsg.h":
     nmsg_res            nmsg_input_set_blocking_io(nmsg_input_t input, bool flag)
 
     nmsg_output_t       nmsg_output_open_file(int fd, size_t bufsz)
+    nmsg_output_t       nmsg_output_open_json(int fd)
     nmsg_output_t       nmsg_output_open_sock(int fd, size_t bufsz)
     nmsg_output_t       nmsg_output_open_callback(nmsg_cb_message cb, void *user)
     nmsg_res            nmsg_output_flush(nmsg_output_t output)
@@ -233,3 +249,6 @@ cdef extern from "nmsg.h":
     void                nmsg_output_set_zlibout(nmsg_output_t output, bool zlibout)
 
     nmsg_res            nmsg_ipdg_parse(nmsg_ipdg *, unsigned etype, size_t, unsigned char *pkt)
+
+    nmsg_res            nmsg_message_from_json(char *, nmsg_message_t *) nogil
+    nmsg_res            nmsg_message_to_json(nmsg_message_t, char **)

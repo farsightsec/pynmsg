@@ -1,8 +1,32 @@
+#cython: embedsignature=True
+
+# Copyright (c) 2009-2014 by Farsight Security, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 def output_open_file(obj, size_t bufsz=NMSG_WBUFSZ_MAX):
     if type(obj) == str:
         obj = open(obj, 'w')
     o = output()
     o._open_file(obj, bufsz)
+    o.fileobj = obj
+    return o
+
+def output_open_json(obj):
+    if type(obj) == str:
+        obj = open(obj, 'w')
+    o = output()
+    o._open_json(obj)
     o.fileobj = obj
     return o
 
@@ -38,6 +62,7 @@ cdef class output(object):
     cdef str output_type
 
     open_file = staticmethod(output_open_file)
+    open_json = staticmethod(output_open_json)
     open_sock = staticmethod(output_open_sock)
     open_callback = staticmethod(output_open_callback)
 
@@ -56,6 +81,12 @@ cdef class output(object):
         if self._instance == NULL:
             raise Exception, 'nmsg_output_open_file() failed'
         self.output_type = 'file'
+
+    cpdef _open_json(self, fileobj):
+        self._instance = nmsg_output_open_json(fileobj.fileno())
+        if self._instance == NULL:
+            raise Exception, 'nmsg_output_open_json() failed'
+        self.output_type = 'json'
 
     cpdef _open_sock(self, fileobj, size_t bufsz):
         self._instance = nmsg_output_open_sock(fileobj.fileno(), bufsz)

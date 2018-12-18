@@ -1,8 +1,31 @@
+#cython: embedsignature=True
+
+# Copyright (c) 2009-2014 by Farsight Security, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 def input_open_file(obj):
     if type(obj) == str:
         obj = open(obj)
     i = input()
     i._open_file(obj)
+    return i
+
+def input_open_json(obj):
+    if type(obj) == str:
+        obj = open(obj)
+    i = input()
+    i._open_json(obj)
     return i
 
 def input_open_sock(addr, port):
@@ -58,6 +81,7 @@ cdef class input(object):
     cdef bool blocking_io
 
     open_file = staticmethod(input_open_file)
+    open_json = staticmethod(input_open_json)
     open_sock = staticmethod(input_open_sock)
 
     def __cinit__(self):
@@ -80,6 +104,16 @@ cdef class input(object):
             self.fileobj = None
             raise Exception, 'nmsg_input_open_file() failed'
         self.input_type = 'file'
+
+    cpdef _open_json(self, fileobj):
+        cdef int fileno = fileobj.fileno()
+        self.fileobj = fileobj
+        with nogil:
+            self._instance = nmsg_input_open_json(fileno)
+        if self._instance == NULL:
+            self.fileobj = None
+            raise Exception, 'nmsg_input_open_json() failed'
+        self.input_type = 'json'
 
     cpdef _open_sock(self, fileobj):
         self.fileobj = fileobj
