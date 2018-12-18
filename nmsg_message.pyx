@@ -196,6 +196,7 @@ cdef class message(object):
                     res = nmsg_message_enum_value_to_name_by_idx(self._instance, field_idx, val_enum, &str_enum)
                     if res == nmsg_res_success:
                         val_list.append(str_enum.decode('utf-8'))
+
                     else:
                         val_list.append(val_enum)
 
@@ -306,6 +307,7 @@ cdef class message(object):
 
                 elif field_type == nmsg_msgmod_ft_string or field_type == nmsg_msgmod_ft_mlstring:
                     tmp_py_string = fields_enc + '\x00'
+
                     data = tmp_py_string
                     data_len = len(data)
 
@@ -316,6 +318,7 @@ cdef class message(object):
                         ip = socket.inet_pton(socket.AF_INET6, fields[i])
                     data = ip
                     data_len = len(data)
+
 
                 elif field_type == nmsg_msgmod_ft_uint16:
                     val_uint16 = fields_enc

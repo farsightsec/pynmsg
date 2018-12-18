@@ -75,6 +75,7 @@ cdef class nullinput(object):
             with nogil:
                 res = nmsg_input_read_null(self._instance, buf_ptr, buf_len, NULL, &_msgarray, &n_msg)
 
+
         if res == nmsg_res_success:
             for i from 0 <= i < n_msg:
                 msg = _recv_message()
