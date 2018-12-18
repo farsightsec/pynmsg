@@ -20,8 +20,9 @@ the Cython-generated code and do not require Cython to actually be installed.
 Python Performance
 ------------------
 
-Reading from a socket suffers about 75% loss (send 1723300 messages, recv ~400k)
-
+Reading from a socket suffers about 75% loss (send 1723300 messages, recv ~400k), 
+so although that functionality exists, since the socket transport is UDP, this
+Python library is not appropriate for receiving a high volume container stream. 
 
 C Performance
 -------------

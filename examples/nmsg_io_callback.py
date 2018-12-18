@@ -13,24 +13,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import print_function
 
 import nmsg
 import sys
 
 count = 0
 
+
 def cb(msg):
     global count
     count += 1
     if (count % 10000) == 0:
-        sys.stderr.write('.')
+        sys.stdout.write('.')
+        sys.stdout.flush()
 
-io = nmsg.io()
-input = nmsg.input.open_file(sys.argv[1])
-io.add_input(input)
-io.add_output_callback(cb)
-io.add_output_callback(cb)
-io.add_output_callback(cb)
-io.loop()
+try:
+    io = nmsg.io()
+    input = nmsg.input.open_file(sys.argv[1])
+    io.add_input(input)
+    # multiple callbacks are allowed, default behavior is round robin delivery of nmsgs
+    io.add_output_callback(cb)
+    io.loop()
+except Exception as e:
+    print("Exception: {}".format(e))
 
-print '\ncount=%s' % count
+print('\ncount=%s' % count)

@@ -35,9 +35,6 @@ cdef class io(object):
         if self._instance != NULL:
             nmsg_io_destroy(&self._instance)
 
-    def abort_loop(self, signal, frame):
-        print("abort")
-
     def __init__(self):
         self.filter_vid = 0
         self.filter_msgtype = 0

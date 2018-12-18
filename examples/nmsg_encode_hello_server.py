@@ -18,22 +18,28 @@ import sys
 
 import nmsg
 
+
 class UnsupportedEncodeType(Exception):
     pass
 
+
 class Encode(object):
     __slots__ = ('encode', 'decode')
+
     def __init__(self, encode, decode):
         self.encode = encode
         self.decode = decode
+
 
 class EncodeDummy(object):
     @staticmethod
     def encode(*args, **kwargs):
         raise UnsupportedEncodeType
+
     @staticmethod
     def decode(*args, **kwargs):
         raise UnsupportedEncodeType
+
 
 try:
     import json
@@ -61,17 +67,21 @@ table_encode = {
     'XML':      EncodeDummy
 }
 
+
 def process(m):
     nmsg.print_nmsg_header(m, sys.stdout)
     sys.stdout.write('type: %s\n' % m['type'])
     if m['type'] in table_encode:
         try:
-            sys.stdout.write('payload: %s' % table_encode[m['type']].decode(m['payload']))
+            sys.stdout.write('payload: %s' %
+                             table_encode[m['type']].decode(
+                                 m['payload'].decode('utf-8')))
         except UnsupportedEncodeType:
             sys.stdout.write('payload: <UNABLE TO DECODE>')
     else:
         sys.stdout.write('payload: <UNKNOWN ENCODING>')
     sys.stdout.write('\n\n')
+
 
 def main(addr, port):
     i = nmsg.input.open_sock(addr, port)
@@ -80,6 +90,7 @@ def main(addr, port):
         m = i.read()
         if m:
             process(m)
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 3:

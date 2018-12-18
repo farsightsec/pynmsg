@@ -15,9 +15,8 @@
 # limitations under the License.
 
 import nmsg
-import socket
 import sys
-import time
+
 
 def main(addr, port, out):
     i = nmsg.input.open_sock(addr, port)
@@ -37,6 +36,7 @@ def main(addr, port, out):
             else:
                 out.write('%s: %s\n' % (key, repr(val)))
         out.write('\n')
+
 
 if __name__ == '__main__':
     main(sys.argv[1], sys.argv[2], sys.stdout)
