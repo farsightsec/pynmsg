@@ -39,6 +39,7 @@ def pkgconfig(*packages, **kw):
 
     pkg_config_output = subprocess.check_output(pkg_config_cmd,
                                                 universal_newlines=True)
+
     for token in pkg_config_output.split():
         flag = token[:2]
         arg = token[2:]
