@@ -50,6 +50,7 @@ def pkgconfig(*packages, **kw):
 try:
     from Cython.Build import build_ext, cythonize
     from distutils.extension import Extension
+    import cysignals
     extensions = [Extension("_nmsg", ['_nmsg.pyx'],
                             depends=[
                                 'nmsg.pxi',
@@ -64,20 +65,12 @@ try:
                             **pkgconfig('libnmsg >= 0.10.0')
                             )]
 
-    setup(ext_modules=cythonize(extensions),
+    setup(ext_modules=cythonize(extensions, include_path=cysignals.__path__),
           name=NAME,
           version=VERSION,
           py_modules=['nmsg']
           )
-except ImportError:
-    import os
-    if os.path.isfile('_nmsg.c'):
-        setup(
-            name=NAME,
-            version=VERSION,
-            ext_modules=[Extension('_nmsg', ['_nmsg.c'],
-                                   **pkgconfig('libnmsg >= 0.10.0'))],
-            py_modules=['nmsg'],
-        )
-    else:
-        raise
+except ImportError as e:
+    import sys
+    print("Cython and cysignals are required. You are building with Python {}".format(sys.version_info.major))
+    print(e)

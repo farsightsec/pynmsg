@@ -8,7 +8,8 @@ C library.
 Building
 --------
 
-Building from a git checkout requires a C compiler, Python, Cython, Cysignals, and the
+Building from a git checkout requires a C compiler, Python, Cython, 
+[Cysignals](https://pypi.org/project/cysignals/), and the
 `nmsg` library to be installed first. Distribution tarballs ship with a copy of
 the Cython-generated code and do not require Cython to actually be installed.
 
@@ -17,17 +18,28 @@ the Cython-generated code and do not require Cython to actually be installed.
     python setup.py build
 
 
+Signals
+-------
+Since libnmsg processes data primarily using callbacks, Cython will disable
+signal handling. A consequence of this is that control-C will be unavailable
+to break out of the nmsg IO loop. Cysignals adds signal handling so that 
+control-C will work. Depending upon your platform and version of Python you
+are using, Cysignals may not be available pre-packaged.
+
 Python Performance
 ------------------
+Some notes on performance. In particular, Python isn't great at receiving nmsgs
+off of the network at high rates, and processing them reliably. 
 
-Reading from a socket suffers about 75% loss (send 1723300 messages, recv ~400k), 
-so although that functionality exists, since the socket transport is UDP, this
+Reading from a socket suffers about 75% loss (our test sent 1723300 messages, pynmsg recvd ~400k), 
+so although the ability to read from the network exists, but transport is UDP, this
 Python library is not appropriate for receiving a high volume container stream. 
 
 C Performance
 -------------
 
-Using nmsgtool to read from a file, write to a localhost socket with another nmsgtool reading
+As a point of comparison, running the same test: using nmsgtool to read from a file, 
+write to a localhost socket but instead of Python, using another nmsgtool reading
 from the localhost socket:
 
 writer sends: 1723300 messages

@@ -41,11 +41,9 @@ def input_open_sock(addr, port):
     i._open_sock(obj)
     return i
 
-cdef class nullinput(object, tv_sec=None, tv_nsec=None):
+cdef class nullinput(object):
     cdef nmsg_input_t _instance
     cdef object lock
-    cdef timespec ts
-    cdef timespec *tsp
 
     def __cinit__(self):
         self._instance = nmsg_input_open_null()
@@ -60,11 +58,13 @@ cdef class nullinput(object, tv_sec=None, tv_nsec=None):
     def __repr__(self):
         return 'nmsg nullinput object _instance=0x%x' % <uint64_t> self._instance
 
-    def read(self, bytes buf):
+    def read(self, bytes buf, tv=None):
         cdef nmsg_res res
         cdef nmsg_message_t *_msgarray
         cdef size_t n_msg
         cdef _recv_message msg
+        cdef timespec ts
+        cdef timespec *tsp
         msg_list = []
 
         if self._instance == NULL:
@@ -73,9 +73,11 @@ cdef class nullinput(object, tv_sec=None, tv_nsec=None):
         cdef uint8_t * buf_ptr = <uint8_t *> buf
         cdef size_t buf_len = len(buf)
 
-        if tv_sec is not None and tv_nsec is not None:
-            ts.tv_sec = tv_sec
-            ts.tv_nsec = tv_nsec
+        if tv is not None:
+            if not isinstance(tv, numbers.Real):
+                raise ValueError('tv must be a real number')
+            ts.tv_sec = int(tv)
+            ts.tv_nsec = tv - int(tv)
             tsp = &ts
         else:
             tsp = NULL
