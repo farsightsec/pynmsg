@@ -52,6 +52,7 @@ try:
     from distutils.extension import Extension
     import cysignals
     extensions = [Extension("_nmsg", ['_nmsg.pyx'],
+                            extra_compile_args=["-Wno-unused-variable"],
                             depends=[
                                 'nmsg.pxi',
                                 'nmsg_input.pyx',

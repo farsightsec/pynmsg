@@ -13,6 +13,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+# this include is needed for older cysignals builds (eg debian 8 pkg)
+# newer builds will give a deprecation warning at build time
 include "signals.pxi"
 
 from cysignals.signals cimport sig_check
