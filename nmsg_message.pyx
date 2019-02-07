@@ -1,6 +1,6 @@
 #cython: embedsignature=True
 
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2019 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -398,11 +398,11 @@ cdef class message(object):
         self.sync_message()
         res = nmsg_message_to_json(self._instance, &s)
         if res != nmsg_res_success:
-            raise Exception, 'nmsg_message_to_json() failed: %s' % nmsg_res_lookup(res)
+            raise Exception, 'nmsg_message_to_json() failed: %s' % _cstar2str(nmsg_res_lookup(res))
 
-        rval = s
+        rval = s.decode('utf-8')
         free(s)
-        return rval
+        return str(rval)
 
 cdef class _recv_message(message):
     def __init__(self):
@@ -421,7 +421,7 @@ cdef class _json_message(message):
         with nogil:
             res = nmsg_message_from_json(s, &self._instance)
         if res != nmsg_res_success:
-            raise Exception, 'nmsg_message_from_json() failed: %s' % nmsg_res_lookup(res)
+            raise Exception, 'nmsg_message_from_json() failed: %s' % _cstar2str(nmsg_res_lookup(res))
 
         self._mod = msgmod(nmsg_message_get_vid(self._instance),
                 nmsg_message_get_msgtype(self._instance))

@@ -1,6 +1,6 @@
 #cython: embedsignature=True
 
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2019 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,9 +30,12 @@ def msgmod_vid_to_vname(unsigned vid):
     else:
         return vname.decode('utf-8')
 
-def msgmod_vname_to_vid(char *vname):
+def msgmod_vname_to_vid(str vname):
     cdef unsigned vid
-    vid = nmsg_msgmod_vname_to_vid(vname)
+    cdef char *vname2
+    t = vname.encode('ascii')
+    vname2 = t
+    vid = nmsg_msgmod_vname_to_vid(vname2)
     if vid == 0:
         raise Exception, 'unknown vendor name'
     return vid
@@ -45,9 +48,12 @@ def msgmod_msgtype_to_mname(unsigned vid, unsigned msgtype):
     else:
         return mname.decode('utf-8')
 
-def msgmod_mname_to_msgtype(unsigned vid, char *mname):
+def msgmod_mname_to_msgtype(unsigned vid, mname):
     cdef unsigned msgtype
-    msgtype = nmsg_msgmod_mname_to_msgtype(vid, mname)
+    cdef char *mname2
+    t = mname.encode('ascii')
+    mname2 = t
+    msgtype = nmsg_msgmod_mname_to_msgtype(vid, mname2)
     if msgtype == 0:
         raise Exception, 'unknown vendor ID or message type name'
     return msgtype

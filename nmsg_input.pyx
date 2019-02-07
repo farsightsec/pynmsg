@@ -1,6 +1,6 @@
 #cython: embedsignature=True
 
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2019 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import threading
+from cysignals.signals cimport sig_on, sig_off
+
+def _cstar2str(x):
+    t = x.decode('ascii')
+    return t
 
 def input_open_file(obj):
     if type(obj) == str:
@@ -86,7 +91,6 @@ cdef class nullinput(object):
             with nogil:
                 res = nmsg_input_read_null(self._instance, buf_ptr, buf_len, tsp, &_msgarray, &n_msg)
 
-
         if res == nmsg_res_success:
             for i from 0 <= i < n_msg:
                 msg = _recv_message()
@@ -94,7 +98,7 @@ cdef class nullinput(object):
                 msg_list.append(msg)
             free(_msgarray)
         else:
-            raise Exception, 'nmsg_input_null() failed: %s' % nmsg_res_lookup(res)
+            raise Exception, 'nmsg_input_null() failed: %s' % _cstar2str(nmsg_res_lookup(res))
 
         return msg_list
 
@@ -121,7 +125,7 @@ cdef class input(object):
         self.blocking_io = True
 
     def __repr__(self):
-        return 'nmsg input object type=%s _instance=0x%x' % (self.input_type, <uint64_t> self._instance)
+        return 'nmsg input object type=%s _instance=0x%x' % (_cstar2str(self.input_type), <uint64_t> self._instance)
 
     cpdef _open_file(self, fileobj):
         self.fileobj = fileobj
@@ -170,7 +174,9 @@ cdef class input(object):
         while res != nmsg_res_success:
             with self.lock:
                 with nogil:
+                    #sig_on()   # doesnt quite work
                     res = nmsg_input_read(self._instance, &_msg)
+                    #sig_off()
             if res == nmsg_res_success:
                 msg = _recv_message()
                 msg.set_instance(_msg)
@@ -182,11 +188,11 @@ cdef class input(object):
                 if err != 0:
                     if PyErr_ExceptionMatches(KeyboardInterrupt):
                         raise KeyboardInterrupt
-                elif self.blocking_io == False:
+                elif self.blocking_io is False:
                     return None
                 continue
             else:
-                raise Exception, 'nmsg_input_read() failed: %s' % nmsg_res_lookup(res)
+                raise Exception, 'nmsg_input_read() xfailed: %s' % _cstar2str(nmsg_res_lookup(res))
         
     def set_filter_msgtype(self, vid, msgtype):
         if self._instance == NULL:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2009-2015 by Farsight Security, Inc.
+# Copyright (c) 2009-2019 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +15,39 @@
 # limitations under the License.
 from __future__ import print_function
 
-from distutils.core import setup
+from setuptools import setup, Command
 from distutils.extension import Extension
+from distutils.command.clean import clean
+import unittest
+import os
+import shutil
 
 NAME = 'pynmsg'
 VERSION = '0.4.0'
+
+
+class Cleaner(clean):
+    def run(self):
+        clean.run(self)
+        for i in ["_nmsg.c", "cysignals_crash_logs", "build", "__pycache__", "pynmsg.egg-info", "dist"]:
+            print("Cleaning ", i)
+            if os.path.isfile(i):
+                os.unlink(i)
+            elif os.path.isdir(i):
+                shutil.rmtree(i)
+
+
+class Test(Command):
+    user_options = []
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        unittest.TextTestRunner(verbosity=1).run(
+            unittest.TestLoader().discover('tests'))
 
 
 def pkgconfig(*packages, **kw):
@@ -66,10 +94,13 @@ try:
                             **pkgconfig('libnmsg >= 0.10.0')
                             )]
 
+    os.remove("_nmsg.c")
     setup(ext_modules=cythonize(extensions, include_path=cysignals.__path__),
           name=NAME,
           version=VERSION,
-          py_modules=['nmsg']
+          py_modules=['nmsg'],
+          cmdclass={'test': Test, 'clean': Cleaner},
+          zip_safe=True
           )
 except ImportError as e:
     import sys
