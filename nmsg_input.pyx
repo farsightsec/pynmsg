@@ -14,7 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import threading
-from cysignals.signals cimport sig_on, sig_off
 
 def _cstar2str(x):
     t = x.decode('ascii')
@@ -174,9 +173,7 @@ cdef class input(object):
         while res != nmsg_res_success:
             with self.lock:
                 with nogil:
-                    #sig_on()   # doesnt quite work
                     res = nmsg_input_read(self._instance, &_msg)
-                    #sig_off()
             if res == nmsg_res_success:
                 msg = _recv_message()
                 msg.set_instance(_msg)

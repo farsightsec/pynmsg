@@ -1,21 +1,5 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2009-2019 by Farsight Security, Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#    http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-from __future__ import print_function
-
 import sys
 import time
 
@@ -31,8 +15,7 @@ else:
 
 m = nmsg.msgtype.isc.encode()
 
-iterations = 5
-
+iterations = 3
 
 def send(e_type, e_payload):
     t = time.time()
@@ -43,7 +26,6 @@ def send(e_type, e_payload):
     m['payload'] = e_payload
     o.write(m)
 
-
 # TEXT
 for i in range(0, iterations):
     hello = 'hello world %s' % i
@@ -53,7 +35,7 @@ print('sent TEXT-encoded payloads')
 # JSON
 try:
     import json
-    hello = {'hello': 'world', 'foo': 'bar'}
+    hello = { 'hello': 'world', 'foo': 'bar' }
     for i in range(0, iterations):
         hello['id'] = i
         send('JSON', json.dumps(hello))
@@ -64,7 +46,7 @@ except ImportError:
 # YAML
 try:
     import yaml
-    hello = {'hello': 'world', 'foo': 'baz'}
+    hello = { 'hello': 'world', 'foo': 'baz' }
     for i in range(0, iterations):
         hello['id'] = i
         send('YAML', yaml.dump(hello))
@@ -75,7 +57,7 @@ except ImportError:
 # MSGPACK
 try:
     import msgpack
-    hello = {'hello': 'world', 'foo': 'q\x00\x00x'}
+    hello = { 'hello': 'world', 'foo': 'q\x00\x00x' }
     for i in range(0, iterations):
         hello['id'] = i
         send('MSGPACK', msgpack.dumps(hello))

@@ -29,7 +29,7 @@ VERSION = '0.4.0'
 class Cleaner(clean):
     def run(self):
         clean.run(self)
-        for i in ["_nmsg.c", "cysignals_crash_logs", "build", "__pycache__", "pynmsg.egg-info", "dist"]:
+        for i in ["_nmsg.c", "build", "__pycache__", "pynmsg.egg-info", "dist"]:
             print("Cleaning ", i)
             if os.path.isfile(i):
                 os.unlink(i)
@@ -78,8 +78,7 @@ def pkgconfig(*packages, **kw):
 try:
     from Cython.Build import build_ext, cythonize
     from distutils.extension import Extension
-    import cysignals
-    extensions = [Extension("_nmsg", ['_nmsg.pyx'],
+    extensions = [Extension("_nmsg", ['_nmsg.pyx', 'sig_manager.c'],
                             extra_compile_args=["-Wno-unused-variable"],
                             depends=[
                                 'nmsg.pxi',
@@ -94,8 +93,11 @@ try:
                             **pkgconfig('libnmsg >= 0.10.0')
                             )]
 
-    os.remove("_nmsg.c")
-    setup(ext_modules=cythonize(extensions, include_path=cysignals.__path__),
+    try:
+        os.remove("_nmsg.c")
+    except FileNotFoundError:
+        pass
+    setup(ext_modules=cythonize(extensions),
           name=NAME,
           version=VERSION,
           py_modules=['nmsg'],
@@ -104,5 +106,5 @@ try:
           )
 except ImportError as e:
     import sys
-    print("Cython and cysignals are required. You are building with Python {}".format(sys.version_info.major))
+    print("Cython is required. You are building with Python {}".format(sys.version_info.major))
     print(e)

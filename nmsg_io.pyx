@@ -14,11 +14,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# this include is needed for older cysignals builds (eg debian 8 pkg)
-# newer builds will give a deprecation warning at build time
-include "signals.pxi"
+from libc.signal cimport *
+from cpython.ref cimport Py_XINCREF, Py_XDECREF, PyObject
+from cpython.exc cimport (PyErr_Occurred, PyErr_SetString, PyErr_CheckSignals, PyErr_Fetch, PyErr_Restore, PyErr_NormalizeException)
 
-from cysignals.signals cimport sig_check
+raise_kbint = 0
+
+cdef extern from "sig_manager.c":
+    void setup_sighandler() nogil
+    void PyErr_SetNone(object type)
+
+def python_check_interrupt(sig, frame):
+    global raise_kbint
+    raise_kbint = 1
+
+cdef int pynmsg_raise_signal "pynmsg_raise_signal"(int sig) except 0 with gil:
+    if PyErr_Occurred():
+        return 0
+    elif sig == SIGINT:
+        PyErr_SetNone(KeyboardInterrupt)
+    elif sig == SIGTERM or sig == SIGHUP:
+        PyErr_SetNone(SystemExit)
+    cdef PyObject* typ
+    cdef PyObject* val
+    cdef PyObject* tb
+    PyErr_Fetch(&typ, &val, &tb)
+    PyErr_NormalizeException(&typ, &val, &tb)
+    Py_XINCREF(val)
+    PyErr_Restore(typ, val, tb)
+    PyErr_CheckSignals()
+    return 0
 
 cdef class io(object):
     cdef nmsg_io_t _instance
@@ -51,7 +76,12 @@ cdef class io(object):
         self._instance = nmsg_io_init()
         if self._instance == NULL:
             raise Exception, 'nmsg_io_init() failed'
-        #nmsg_io_set_debug(self._instance, 4)
+
+        import signal
+        old_sigh = signal.signal(signal.SIGINT, python_check_interrupt)
+        setup_sighandler()
+
+        # nmsg_io_set_debug(self._instance, 4)
 
     def add_input(self, input i):
         cdef nmsg_res res
@@ -117,10 +147,9 @@ cdef class io(object):
         cdef nmsg_res res
 
         def wrapper(msg):
-            try:
-                sig_check()
+            if raise_kbint == 0:
                 fn(msg)
-            except KeyboardInterrupt:
+            else:
                 self.break_loop()
                 raise KeyboardInterrupt
 
