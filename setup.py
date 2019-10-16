@@ -95,7 +95,7 @@ try:
 
     try:
         os.remove("_nmsg.c")
-    except FileNotFoundError:
+    except OSError:
         pass
     setup(ext_modules=cythonize(extensions),
           name=NAME,

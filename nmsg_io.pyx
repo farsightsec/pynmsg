@@ -28,7 +28,7 @@ def python_check_interrupt(sig, frame):
     global raise_kbint
     raise_kbint = 1
 
-cdef int pynmsg_raise_signal "pynmsg_raise_signal"(int sig) except 0 with gil:
+cdef public int pynmsg_raise_signal "pynmsg_raise_signal"(int sig) except 0 with gil:
     if PyErr_Occurred():
         return 0
     elif sig == SIGINT:

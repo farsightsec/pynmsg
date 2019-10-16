@@ -4,8 +4,7 @@
 #include <string.h>
 #include <Python.h>
 
-__attribute__((unused))
-static int pynmsg_raise_signal(int sig);
+extern int pynmsg_raise_signal(int sig);
 
 static void pynmsg_sighandler(int sig)
 {
