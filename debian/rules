@@ -1,4 +1,11 @@
 #!/usr/bin/make -f
 
+export PYBUILD_NAME=nmsg
+export PYBUILD_VERSIONS=2.7 3.5
+export DH_ALWAYS_EXCLUDE=_nmsg.h:_nmsg.c
+
 %:
-	dh $@ --with python2
+	dh $@ --with python2,python3 --buildsystem=pybuild
+
+override_dh_auto_test:
+	python setup.py test

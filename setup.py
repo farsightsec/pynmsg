@@ -29,7 +29,12 @@ VERSION = '0.4.0'
 class Cleaner(clean):
     def run(self):
         clean.run(self)
-        for i in ["_nmsg.c", "build", "__pycache__", "pynmsg.egg-info", "dist"]:
+        for i in ["_nmsg.c",
+                  "_nmsg.h",
+                  "build",
+                  "__pycache__",
+                  "pynmsg.egg-info",
+                  "dist"]:
             print("Cleaning ", i)
             if os.path.isfile(i):
                 os.unlink(i)
@@ -93,10 +98,11 @@ try:
                             **pkgconfig('libnmsg >= 0.10.0')
                             )]
 
-    try:
-        os.remove("_nmsg.c")
-    except OSError:
-        pass
+    for f in ["_nmsg.c", "_nmsg.h"]:
+        try:
+            os.remove(f)
+        except OSError:
+            pass
     setup(ext_modules=cythonize(extensions),
           name=NAME,
           version=VERSION,
