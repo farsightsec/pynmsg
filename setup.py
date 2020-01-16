@@ -23,7 +23,7 @@ import os
 import shutil
 
 NAME = 'pynmsg'
-VERSION = '0.4.0'
+VERSION = '0.5.0'
 
 
 class Cleaner(clean):
