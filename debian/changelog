@@ -7,9 +7,10 @@ pynmsg (0.5.0-1) debian-farsightsec; urgency=medium
   * Eliminate a declaration warning, OSError instead of FileNotFound.
   * Add clean option to setup.py
   * Warn against unused variables.
-  * Provide nullinput example, pass optional timestamp to nmsg_input_read_null() .
+  * Provide nullinput example, pass optional timestamp to
+    nmsg_input_read_null() .
 
- -- Farsight Security, Inc. <software@farsightsecurity.com>  Thu, 16 Jan 2020 17:17:07 -0500
+ -- Farsight Security, Inc. <software@farsightsecurity.com>  Fri, 03 Apr 2020 23:49:38 +0000
 
 pynmsg (0.4.0) debian-farsightsec; urgency=medium
 
