@@ -398,7 +398,7 @@ cdef class message(object):
         self.sync_message()
         res = nmsg_message_to_json(self._instance, &s)
         if res != nmsg_res_success:
-            raise Exception, 'nmsg_message_to_json() failed: %s' % _cstar2str(nmsg_res_lookup(res))
+            raise Exception, 'nmsg_message_to_json() failed: %s' % _cstr2str(nmsg_res_lookup(res))
 
         rval = s.decode('utf-8')
         free(s)
@@ -421,7 +421,7 @@ cdef class _json_message(message):
         with nogil:
             res = nmsg_message_from_json(s, &self._instance)
         if res != nmsg_res_success:
-            raise Exception, 'nmsg_message_from_json() failed: %s' % _cstar2str(nmsg_res_lookup(res))
+            raise Exception, 'nmsg_message_from_json() failed: %s' % _cstr2str(nmsg_res_lookup(res))
 
         self._mod = msgmod(nmsg_message_get_vid(self._instance),
                 nmsg_message_get_msgtype(self._instance))

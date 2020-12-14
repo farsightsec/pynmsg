@@ -15,7 +15,7 @@
 # limitations under the License.
 import threading
 
-def _cstar2str(x):
+def _cstr2str(x):
     t = x.decode('ascii')
     return t
 
@@ -97,7 +97,7 @@ cdef class nullinput(object):
                 msg_list.append(msg)
             free(_msgarray)
         else:
-            raise Exception, 'nmsg_input_null() failed: %s' % _cstar2str(nmsg_res_lookup(res))
+            raise Exception, 'nmsg_input_null() failed: %s' % _cstr2str(nmsg_res_lookup(res))
 
         return msg_list
 
@@ -124,7 +124,7 @@ cdef class input(object):
         self.blocking_io = True
 
     def __repr__(self):
-        return 'nmsg input object type=%s _instance=0x%x' % (_cstar2str(self.input_type), <uint64_t> self._instance)
+        return 'nmsg input object type=%s _instance=0x%x' % (_cstr2str(self.input_type), <uint64_t> self._instance)
 
     cpdef _open_file(self, fileobj):
         self.fileobj = fileobj
@@ -189,7 +189,7 @@ cdef class input(object):
                     return None
                 continue
             else:
-                raise Exception, 'nmsg_input_read() xfailed: %s' % _cstar2str(nmsg_res_lookup(res))
+                raise Exception, 'nmsg_input_read() xfailed: %s' % _cstr2str(nmsg_res_lookup(res))
         
     def set_filter_msgtype(self, vid, msgtype):
         if self._instance == NULL:
