@@ -205,14 +205,13 @@ cdef class input(object):
             raise Exception, 'object not initialized'
         nmsg_input_set_filter_source(self._instance, source)
 
-    def set_filter_operator(self, bytes s_operator):
+    def set_filter_operator(self, str s_operator):
         cdef unsigned operator
 
         if self._instance == NULL:
             raise Exception, 'object not initialized'
-        operator = nmsg_alias_by_value(nmsg_alias_operator, s_operator)
-        if operator == 0:
-            raise Exception, 'unknown operator %s' % s_operator
+        # msgmod_oname_to_oid will raise an exception if s_operator is not in the nmsg.opalias file
+        operator = msgmod.msgmod_oname_to_oid(s_operator)
         nmsg_input_set_filter_operator(self._instance, operator)
 
     def set_filter_group(self, bytes s_group):

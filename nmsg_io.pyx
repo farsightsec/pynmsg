@@ -52,7 +52,7 @@ cdef class io(object):
     cdef unsigned filter_msgtype
 
     cdef unsigned filter_source
-    cdef bytes filter_operator
+    cdef str filter_operator
     cdef bytes filter_group
 
     cdef list inputs
@@ -168,10 +168,9 @@ cdef class io(object):
     def set_filter_source(self, unsigned source):
         self.filter_source = source
 
-    def set_filter_operator(self, bytes s_operator):
-        operator = nmsg_alias_by_value(nmsg_alias_operator, s_operator)
-        if operator == 0:
-            raise Exception, 'unknown operator %r' % s_operator
+    def set_filter_operator(self, str s_operator):
+        # msgmod_oname_to_oid will raise an exception if s_operator is not in the nmsg.opalias file
+        msgmod.msgmod_oname_to_oid(s_operator)
         self.filter_operator = s_operator
 
     def set_filter_group(self, bytes s_group):
