@@ -24,6 +24,16 @@ def msgmod_oname_to_oid(str oname):
         raise Exception, 'unknown operator name: %s' % oname
     return oid
 
+def msgmod_grname_to_grid(str grname):
+    cdef unsigned oid
+    cdef char *grname2
+    t = grname.encode('ascii')
+    grname2 = t
+    grid = nmsg_alias_by_value(nmsg_alias_group, grname2)
+    if grid == 0:
+        raise Exception, 'unknown group name: %s' % grname
+    return grid
+
 def msgmod_get_max_msgtype(unsigned vid):
     cdef const char *vname
     vname = nmsg_msgmod_vid_to_vname(vid)
@@ -80,6 +90,7 @@ cdef class msgmod(object):
     msgtype_to_mname = staticmethod(msgmod_msgtype_to_mname)
     mname_to_msgtype = staticmethod(msgmod_mname_to_msgtype)
     msgmod_oname_to_oid = staticmethod(msgmod_oname_to_oid)
+    msgmod_grname_to_grid = staticmethod(msgmod_grname_to_grid)
 
     def __cinit__(self, unsigned vid, unsigned msgtype):
         cdef nmsg_res res

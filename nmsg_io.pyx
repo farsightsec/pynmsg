@@ -53,7 +53,7 @@ cdef class io(object):
 
     cdef unsigned filter_source
     cdef str filter_operator
-    cdef bytes filter_group
+    cdef str filter_group
 
     cdef list inputs
     cdef list outputs
@@ -173,10 +173,9 @@ cdef class io(object):
         msgmod.msgmod_oname_to_oid(s_operator)
         self.filter_operator = s_operator
 
-    def set_filter_group(self, bytes s_group):
-        group = nmsg_alias_by_value(nmsg_alias_group, s_group)
-        if group == 0:
-            raise Exception, 'unknown group %r' % s_group
+    def set_filter_group(self, str s_group):
+        # Check that the group is in the nmsg.gralias file, raise Exception if not
+        msgmod.msgmod_grname_to_grid(s_group)
         self.filter_group = s_group
 
     def loop(self):

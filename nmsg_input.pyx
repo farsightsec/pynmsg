@@ -214,14 +214,13 @@ cdef class input(object):
         operator = msgmod.msgmod_oname_to_oid(s_operator)
         nmsg_input_set_filter_operator(self._instance, operator)
 
-    def set_filter_group(self, bytes s_group):
+    def set_filter_group(self, str s_group):
         cdef unsigned group
 
         if self._instance == NULL:
             raise Exception, 'object not initialized'
-        group = nmsg_alias_by_value(nmsg_alias_group, s_group)
-        if group == 0:
-            raise Exception, 'unknown group %s' % s_group
+        # Get the the group id from the nmsg.gralias file, raise Exception if the group name is not in the file
+        group = msgmod.msgmod_grname_to_grid(s_group)
         nmsg_input_set_filter_group(self._instance, group)
 
     def set_blocking_io(self, bool flag):
