@@ -89,8 +89,8 @@ cdef class msgmod(object):
     vname_to_vid = staticmethod(msgmod_vname_to_vid)
     msgtype_to_mname = staticmethod(msgmod_msgtype_to_mname)
     mname_to_msgtype = staticmethod(msgmod_mname_to_msgtype)
-    msgmod_oname_to_oid = staticmethod(msgmod_oname_to_oid)
-    msgmod_grname_to_grid = staticmethod(msgmod_grname_to_grid)
+    oname_to_oid = staticmethod(msgmod_oname_to_oid)
+    grname_to_grid = staticmethod(msgmod_grname_to_grid)
 
     def __cinit__(self, unsigned vid, unsigned msgtype):
         cdef nmsg_res res

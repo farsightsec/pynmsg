@@ -169,13 +169,13 @@ cdef class io(object):
         self.filter_source = source
 
     def set_filter_operator(self, str s_operator):
-        # msgmod_oname_to_oid will raise an exception if s_operator is not in the nmsg.opalias file
-        msgmod.msgmod_oname_to_oid(s_operator)
+        # oname_to_oid will raise an exception if s_operator is not in the nmsg.opalias file
+        msgmod.oname_to_oid(s_operator)
         self.filter_operator = s_operator
 
     def set_filter_group(self, str s_group):
         # Check that the group is in the nmsg.gralias file, raise Exception if not
-        msgmod.msgmod_grname_to_grid(s_group)
+        msgmod.grname_to_grid(s_group)
         self.filter_group = s_group
 
     def loop(self):

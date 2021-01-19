@@ -210,8 +210,8 @@ cdef class input(object):
 
         if self._instance == NULL:
             raise Exception, 'object not initialized'
-        # msgmod_oname_to_oid will raise an exception if s_operator is not in the nmsg.opalias file
-        operator = msgmod.msgmod_oname_to_oid(s_operator)
+        # oname_to_oid will raise an exception if s_operator is not in the nmsg.opalias file
+        operator = msgmod.oname_to_oid(s_operator)
         nmsg_input_set_filter_operator(self._instance, operator)
 
     def set_filter_group(self, str s_group):
@@ -220,7 +220,7 @@ cdef class input(object):
         if self._instance == NULL:
             raise Exception, 'object not initialized'
         # Get the the group id from the nmsg.gralias file, raise Exception if the group name is not in the file
-        group = msgmod.msgmod_grname_to_grid(s_group)
+        group = msgmod.grname_to_grid(s_group)
         nmsg_input_set_filter_group(self._instance, group)
 
     def set_blocking_io(self, bool flag):
