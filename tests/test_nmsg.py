@@ -20,6 +20,7 @@ import time
 import os
 import warnings
 import multiprocessing as mp
+import socket
 
 try:
     # This is needed because 'spawn' is the start method in macos by default since 3.8.
@@ -198,6 +199,115 @@ class TestNMSG(unittest.TestCase):
         j = r.read()
         self.assertEqual(j, None)
         r.close()
+
+    @ignore_warnings
+    def test_message_http(self):
+        # See https://github.com/farsightsec/nmsg/blob/master/nmsg/base/http.proto
+        data = {
+            'type': 1,
+            'srcip': '0.0.0.0',
+            'dstip': '255.255.255.255',
+            'request': 'there is no cow level',
+            'srcport': 0,
+            'dstport': 65534
+        }
+
+        m = nmsg.msgtype.isc.http()
+        m['type'] = data['type'] # sinkhole
+        m['srcip'] = data['srcip']
+        m['dstip'] = data['dstip']
+        m['request'] = data['request']
+        m['srcport'] = data['srcport']
+        m['dstport'] = data['dstport']
+
+        def reader():
+            r = nmsg.input.open_sock('127.0.0.1', 19191)
+            j = json.loads(r.read().to_json())
+            r.close()
+            self.assertEqual(j['message']['type'], 'sinkhole')
+            self.assertEqual(j['message']['srcip'], data['srcip'])
+            self.assertEqual(j['message']['dstip'], data['dstip'])
+            self.assertEqual(j['message']['request'], data['request'])
+            self.assertEqual(j['message']['srcport'], data['srcport'])
+            self.assertEqual(j['message']['dstport'], data['dstport'])
+
+        p = mp.Process(target=reader)
+        p.start()
+        time.sleep(1)
+
+        s = nmsg.output.open_sock('127.0.0.1', 19191)
+        s.write(m)
+        s.flush()
+        s.close()
+        p.join()
+
+
+
+    @ignore_warnings
+    def test_message_dnsqr(self):
+        # See https://github.com/farsightsec/nmsg/blob/master/nmsg/base/dnsqr.proto
+        data = {
+            'type': 'TCP',
+            'query_ip': '0000::0000',
+            'response_ip': '2001:0db8:85a3:0000:0000:8a2e:0370:7334',
+            'proto': 42,
+            'query_port': 1,
+            'response_port': 65534,
+            'id': 12,
+            'response_packet': b'\xde\xad\xbe\xef',
+            'udp_checksum': 'CORRECT',
+            'response_time_sec': [123],
+            'response_time_nsec': [256],
+            'resolver_address_zeroed': False,
+        }
+
+        m = nmsg.msgtype.base.dnsqr()
+        m['type'] = data['type']
+        m['query_ip'] = data['query_ip']
+        m['response_ip'] = data['response_ip']
+        m['proto'] = data['proto']
+        m['query_port'] = data['query_port']
+        m['response_port'] = data['response_port']
+        m['id'] = data['id']
+        m['response_packet'] = data['response_packet']
+        m['udp_checksum'] = data['udp_checksum']
+        m['response_time_sec'] = data['response_time_sec']
+        m['response_time_nsec'] = data['response_time_nsec']
+        m['resolver_address_zeroed'] = data['resolver_address_zeroed']
+
+        def reader():
+            r = nmsg.input.open_sock('127.0.0.1', 19191)
+            j = json.loads(r.read().to_json())
+            r.close()
+            self.assertEqual(j['message']['type'], data['type'])
+
+            actual_ip = socket.inet_pton(socket.AF_INET6, j['message']['query_ip'])
+            expected_ip = socket.inet_pton(socket.AF_INET6, data['query_ip'])
+            self.assertEqual(actual_ip, expected_ip)
+
+            actual_ip = socket.inet_pton(socket.AF_INET6, j['message']['response_ip'])
+            expected_ip = socket.inet_pton(socket.AF_INET6, data['response_ip'])
+            self.assertEqual(actual_ip, expected_ip)
+
+            self.assertEqual(j['message']['proto'], str(data['proto']))
+            self.assertEqual(j['message']['query_port'], data['query_port'])
+            self.assertEqual(j['message']['response_port'], data['response_port'])
+            self.assertEqual(j['message']['id'], data['id'])
+            self.assertEqual(j['message']['response_packet'], ['3q2+7w=='])
+            self.assertEqual(j['message']['udp_checksum'], data['udp_checksum'])
+            self.assertEqual(j['message']['response_time_sec'], data['response_time_sec'])
+            self.assertEqual(j['message']['response_time_nsec'], data['response_time_nsec'])
+            self.assertEqual(j['message']['resolver_address_zeroed'], data['resolver_address_zeroed'])
+
+        p = mp.Process(target=reader)
+        p.start()
+        time.sleep(1)
+
+        s = nmsg.output.open_sock('127.0.0.1', 19191)
+        s.write(m)
+        s.flush()
+        s.close()
+        p.join()
 
 
 if __name__ == "__main__":

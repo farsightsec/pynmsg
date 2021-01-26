@@ -281,10 +281,24 @@ cdef class message(object):
                 fields = [ self.fields[field_name] ]
 
             for i in range(0, len(fields)):
-                if type(fields[i]) == bytes:
-                    fields_enc = fields[i]
+                if isinstance(fields[i], bytes):
+                    fields_enc = fields[i] # Don't encode in python2
+                elif type(fields[i]) == str:
+                    # Test if this string is a valid ip address
+                    try:
+                        socket.inet_pton(socket.AF_INET, fields[i])
+                        fields_enc = fields[i]
+                    except (OSError, socket.error):
+                        # Try ipv6
+                        try:
+                            socket.inet_pton(socket.AF_INET6, fields[i])
+                            fields_enc = fields[i]
+                        except (OSError, socket.error):
+                            # Then this must be a regular py3 string
+                            fields_enc = fields[i].encode('utf-8')
                 else:
-                    fields_enc = fields[i].encode('utf-8')
+                    fields_enc = fields[i]
+
                 if field_type == nmsg_msgmod_ft_enum:
                     if type(fields[i]) == int:
                         val_enum = fields_enc
@@ -300,26 +314,20 @@ cdef class message(object):
                         data_len = sizeof(val_enum)
                     else:
                         raise Exception, 'unhandled python enum type: %s' % type(fields[i])
-
                 elif field_type == nmsg_msgmod_ft_bytes:
                     data = fields_enc
                     data_len = len(data)
-
                 elif field_type == nmsg_msgmod_ft_string or field_type == nmsg_msgmod_ft_mlstring:
-                    tmp_py_string = fields_enc + '\x00'
-
+                    tmp_py_string = fields_enc + b'\x00'
                     data = tmp_py_string
                     data_len = len(data)
-
                 elif field_type == nmsg_msgmod_ft_ip:
                     try:
                         ip = socket.inet_pton(socket.AF_INET, fields[i])
                     except:
                         ip = socket.inet_pton(socket.AF_INET6, fields[i])
                     data = ip
-                    data_len = len(data)
-
-
+                    data_len = len(ip)
                 elif field_type == nmsg_msgmod_ft_uint16:
                     val_uint16 = fields_enc
                     data = <uint8_t *> &val_uint16
@@ -359,7 +367,6 @@ cdef class message(object):
                     val_bool = fields_enc
                     data = <uint8_t *> &val_bool
                     data_len = sizeof(int)
-
                 else:
                     raise Exception, 'unknown field_type'
 
