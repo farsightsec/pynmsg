@@ -281,31 +281,17 @@ cdef class message(object):
                 fields = [ self.fields[field_name] ]
 
             for i in range(0, len(fields)):
-                if isinstance(fields[i], bytes):
-                    fields_enc = fields[i] # Don't encode in python2
-                elif type(fields[i]) == str:
-                    # Test if this string is a valid ip address
-                    try:
-                        socket.inet_pton(socket.AF_INET, fields[i])
-                        fields_enc = fields[i]
-                    except (OSError, socket.error):
-                        # Try ipv6
-                        try:
-                            socket.inet_pton(socket.AF_INET6, fields[i])
-                            fields_enc = fields[i]
-                        except (OSError, socket.error):
-                            # Then this must be a regular py3 string
-                            fields_enc = fields[i].encode('utf-8')
-                else:
-                    fields_enc = fields[i]
-
                 if field_type == nmsg_msgmod_ft_enum:
                     if type(fields[i]) == int:
-                        val_enum = fields_enc
+                        val_enum = fields[i]
                         data = <uint8_t *> &val_enum
                         data_len = sizeof(val_enum)
                     elif type(fields[i]) == str or type(fields[i]) == unicode:
                         tmp = field_name.encode('utf-8')
+                        if isinstance(fields[i], bytes):
+                            fields_enc = fields[i] # Don't encode in python2
+                        else:
+                            fields_enc = fields[i].encode('utf-8')
                         res = nmsg_message_enum_name_to_value(self._instance, tmp,
                                                               fields_enc, &val_enum)
                         if res != nmsg_res_success:
@@ -315,9 +301,13 @@ cdef class message(object):
                     else:
                         raise Exception, 'unhandled python enum type: %s' % type(fields[i])
                 elif field_type == nmsg_msgmod_ft_bytes:
-                    data = fields_enc
+                    data = fields[i]
                     data_len = len(data)
                 elif field_type == nmsg_msgmod_ft_string or field_type == nmsg_msgmod_ft_mlstring:
+                    if isinstance(fields[i], bytes):
+                        fields_enc = fields[i] # Don't encode in python2
+                    else:
+                        fields_enc = fields[i].encode('utf-8')
                     tmp_py_string = fields_enc + b'\x00'
                     data = tmp_py_string
                     data_len = len(data)
@@ -329,42 +319,42 @@ cdef class message(object):
                     data = ip
                     data_len = len(ip)
                 elif field_type == nmsg_msgmod_ft_uint16:
-                    val_uint16 = fields_enc
+                    val_uint16 = fields[i]
                     data = <uint8_t *> &val_uint16
                     data_len = sizeof(val_uint16)
 
                 elif field_type == nmsg_msgmod_ft_int16:
-                    val_int16 = fields_enc
+                    val_int16 = fields[i]
                     data = <uint8_t *> &val_int16
                     data_len = sizeof(val_int16)
 
                 elif field_type == nmsg_msgmod_ft_uint32:
-                    val_uint32 = fields_enc
+                    val_uint32 = fields[i]
                     data = <uint8_t *> &val_uint32
                     data_len = sizeof(val_uint32)
 
                 elif field_type == nmsg_msgmod_ft_int32:
-                    val_int32 = fields_enc
+                    val_int32 = fields[i]
                     data = <uint8_t *> &val_int32
                     data_len = sizeof(val_int32)
 
                 elif field_type == nmsg_msgmod_ft_uint64:
-                    val_uint64 = fields_enc
+                    val_uint64 = fields[i]
                     data = <uint8_t *> &val_uint64
                     data_len = sizeof(val_uint64)
 
                 elif field_type == nmsg_msgmod_ft_int64:
-                    val_int64 = fields_enc
+                    val_int64 = fields[i]
                     data = <uint8_t *> &val_int64
                     data_len = sizeof(val_int64)
 
                 elif field_type == nmsg_msgmod_ft_double:
-                    val_double = fields_enc
+                    val_double = fields[i]
                     data = <uint8_t *> &val_double
                     data_len = sizeof(val_double)
 
                 elif field_type == nmsg_msgmod_ft_bool:
-                    val_bool = fields_enc
+                    val_bool = fields[i]
                     data = <uint8_t *> &val_bool
                     data_len = sizeof(int)
                 else:
