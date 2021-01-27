@@ -15,7 +15,7 @@
 # limitations under the License.
 import threading
 
-def _cstar2str(x):
+def _cstr2str(x):
     t = x.decode('ascii')
     return t
 
@@ -97,7 +97,7 @@ cdef class nullinput(object):
                 msg_list.append(msg)
             free(_msgarray)
         else:
-            raise Exception, 'nmsg_input_null() failed: %s' % _cstar2str(nmsg_res_lookup(res))
+            raise Exception, 'nmsg_input_null() failed: %s' % _cstr2str(nmsg_res_lookup(res))
 
         return msg_list
 
@@ -124,7 +124,7 @@ cdef class input(object):
         self.blocking_io = True
 
     def __repr__(self):
-        return 'nmsg input object type=%s _instance=0x%x' % (_cstar2str(self.input_type), <uint64_t> self._instance)
+        return 'nmsg input object type=%s _instance=0x%x' % (_cstr2str(self.input_type), <uint64_t> self._instance)
 
     cpdef _open_file(self, fileobj):
         self.fileobj = fileobj
@@ -189,7 +189,7 @@ cdef class input(object):
                     return None
                 continue
             else:
-                raise Exception, 'nmsg_input_read() xfailed: %s' % _cstar2str(nmsg_res_lookup(res))
+                raise Exception, 'nmsg_input_read() xfailed: %s' % _cstr2str(nmsg_res_lookup(res))
         
     def set_filter_msgtype(self, vid, msgtype):
         if self._instance == NULL:
@@ -205,24 +205,22 @@ cdef class input(object):
             raise Exception, 'object not initialized'
         nmsg_input_set_filter_source(self._instance, source)
 
-    def set_filter_operator(self, bytes s_operator):
+    def set_filter_operator(self, str s_operator):
         cdef unsigned operator
 
         if self._instance == NULL:
             raise Exception, 'object not initialized'
-        operator = nmsg_alias_by_value(nmsg_alias_operator, s_operator)
-        if operator == 0:
-            raise Exception, 'unknown operator %s' % s_operator
+        # oname_to_oid will raise an exception if s_operator is not in the nmsg.opalias file
+        operator = msgmod.oname_to_oid(s_operator)
         nmsg_input_set_filter_operator(self._instance, operator)
 
-    def set_filter_group(self, bytes s_group):
+    def set_filter_group(self, str s_group):
         cdef unsigned group
 
         if self._instance == NULL:
             raise Exception, 'object not initialized'
-        group = nmsg_alias_by_value(nmsg_alias_group, s_group)
-        if group == 0:
-            raise Exception, 'unknown group %s' % s_group
+        # Get the the group id from the nmsg.gralias file, raise Exception if the group name is not in the file
+        group = msgmod.grname_to_grid(s_group)
         nmsg_input_set_filter_group(self._instance, group)
 
     def set_blocking_io(self, bool flag):
