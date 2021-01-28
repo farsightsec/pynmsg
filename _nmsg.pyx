@@ -1,5 +1,6 @@
 # cython: embedsignature=True
 # cython: language_level=2
+# cython: linetrace=True
 
 # Copyright (c) 2009-2014, 2018-2020 by Farsight Security, Inc.
 #

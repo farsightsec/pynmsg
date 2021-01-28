@@ -83,33 +83,40 @@ def pkgconfig(*packages, **kw):
 try:
     from Cython.Build import build_ext, cythonize
     from distutils.extension import Extension
-    extensions = [Extension("_nmsg", ['_nmsg.pyx', 'sig_manager.c'],
-                            extra_compile_args=["-Wno-unused-variable"],
-                            depends=[
-                                'nmsg.pxi',
-                                'nmsg_input.pyx',
-                                'nmsg_io.pyx',
-                                'nmsg_message.pyx',
-                                'nmsg_msgmod.pyx',
-                                'nmsg_msgtype.pyx',
-                                'nmsg_output.pyx',
-                                'nmsg_util.pyx',
-                            ],
-                            **pkgconfig('libnmsg >= 0.10.0')
-                            )]
+    extensions = [
+        Extension(
+            "_nmsg",
+            ['_nmsg.pyx', 'sig_manager.c'],
+            extra_compile_args=["-Wno-unused-variable"],
+            depends=[
+                'nmsg.pxi',
+                'nmsg_input.pyx',
+                'nmsg_io.pyx',
+                'nmsg_message.pyx',
+                'nmsg_msgmod.pyx',
+                'nmsg_msgtype.pyx',
+                'nmsg_output.pyx',
+                'nmsg_util.pyx',
+            ],
+            define_macros=[('CYTHON_TRACE', 1)],
+            **pkgconfig('libnmsg >= 0.10.0'),
+        )
+    ]
 
     for f in ["_nmsg.c", "_nmsg.h"]:
         try:
             os.remove(f)
         except OSError:
             pass
-    setup(ext_modules=cythonize(extensions),
-          name=NAME,
-          version=VERSION,
-          py_modules=['nmsg'],
-          cmdclass={'test': Test, 'clean': Cleaner},
-          zip_safe=True
-          )
+    setup(
+        ext_modules=cythonize(
+            extensions, compiler_directives={'linetrace': True}),
+        name=NAME,
+        version=VERSION,
+        py_modules=['nmsg'],
+        cmdclass={'test': Test, 'clean': Cleaner},
+        zip_safe=True,
+    )
 except ImportError as e:
     import sys
     print("Cython is required. You are building with Python {}".format(sys.version_info.major))

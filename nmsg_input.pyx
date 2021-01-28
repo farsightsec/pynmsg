@@ -1,4 +1,5 @@
-#cython: embedsignature=True
+# cython: embedsignature=True
+# cython: linetrace=True
 
 # Copyright (c) 2009-2015, 2018-2021 by Farsight Security, Inc.
 #
