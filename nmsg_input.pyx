@@ -91,7 +91,7 @@ cdef class nullinput(object):
                 res = nmsg_input_read_null(self._instance, buf_ptr, buf_len, tsp, &_msgarray, &n_msg)
 
         if res == nmsg_res_success:
-            for i from 0 <= i < n_msg:
+            for i in range(n_msg):
                 msg = _recv_message()
                 msg.set_instance(_msgarray[i])
                 msg_list.append(msg)
