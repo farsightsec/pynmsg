@@ -10,7 +10,7 @@ pynmsg (0.5.0-1) debian-farsightsec; urgency=medium
   * Provide nullinput example, pass optional timestamp to
     nmsg_input_read_null() .
 
- -- Farsight Security, Inc. <software@farsightsecurity.com>  Fri, 03 Apr 2020 23:49:38 +0000
+ -- Farsight Security, Inc. <software@farsightsecurity.com>  Fri, 29 Jan 2021 00:44:47 +0000
 
 pynmsg (0.4.0-1) debian-farsightsec; urgency=medium
 
