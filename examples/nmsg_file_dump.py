@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2014, 2018-2019 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ import nmsg
 import sys
 import time
 
+
 def main(fname, out):
     i = nmsg.input.open_file(fname)
 
@@ -25,12 +26,13 @@ def main(fname, out):
         m = i.read()
         if not m:
             break
-        
+
         tm = time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(m.time_sec))
         out.write('[%s.%d] ' % (tm, m.time_nsec))
         out.write('[%d:%d %s %s] ' % (m.vid, m.msgtype,
-            nmsg.msgmod.vid_to_vname(m.vid), 
-            nmsg.msgmod.msgtype_to_mname(m.vid, m.msgtype)))
+                                      nmsg.msgmod.vid_to_vname(m.vid),
+                                      nmsg.msgmod.msgtype_to_mname(m.vid,
+                                                                   m.msgtype)))
 
         if m.has_source:
             out.write('[%.8x] ' % m.source)
@@ -58,6 +60,7 @@ def main(fname, out):
                 out.write('%s: %s\n' % (key, repr(val)))
 
         out.write('\n')
+
 
 if __name__ == '__main__':
     main(sys.argv[1], sys.stdout)

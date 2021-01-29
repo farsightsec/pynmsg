@@ -1,6 +1,7 @@
-#cython: embedsignature=True
+# cython: embedsignature=True
+# cython: language_level=2
 
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2014, 2018-2020 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,9 +15,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import numbers
 import os
 import socket
 import time
+import threading
 
 include "nmsg.pxi"
 

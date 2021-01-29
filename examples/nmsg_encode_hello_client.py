@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2014, 2018-2019 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ def send(e_type, e_payload):
 for i in range(0, iterations):
     hello = 'hello world %s' % i
     send('TEXT', hello)
-print 'sent TEXT-encoded payloads'
+print('sent TEXT-encoded payloads')
 
 # JSON
 try:
@@ -53,9 +53,9 @@ try:
     for i in range(0, iterations):
         hello['id'] = i
         send('JSON', json.dumps(hello))
-    print 'sent JSON-encoded payloads'
+    print('sent JSON-encoded payloads')
 except ImportError:
-    print 'no JSON support'
+    print('no JSON support')
 
 # YAML
 try:
@@ -64,9 +64,9 @@ try:
     for i in range(0, iterations):
         hello['id'] = i
         send('YAML', yaml.dump(hello))
-    print 'sent YAML-encoded payloads'
+    print('sent YAML-encoded payloads')
 except ImportError:
-    print 'no YAML support'
+    print('no YAML support')
 
 # MSGPACK
 try:
@@ -75,11 +75,11 @@ try:
     for i in range(0, iterations):
         hello['id'] = i
         send('MSGPACK', msgpack.dumps(hello))
-    print 'sent MSGPACK-encoded payloads'
+    print('sent MSGPACK-encoded payloads')
 except ImportError:
-    print 'no MSGPACK support'
+    print('no MSGPACK support')
 
 # XML - dummy
 for i in range(0, iterations):
     send('XML', '<xml/>')
-print 'sent dummy XML-encoded payloads'
+print('sent dummy XML-encoded payloads')

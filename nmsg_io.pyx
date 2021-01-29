@@ -1,6 +1,6 @@
 #cython: embedsignature=True
 
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2015, 2018-2019 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,37 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+from libc.signal cimport *
+from cpython.ref cimport Py_XINCREF, Py_XDECREF, PyObject
+from cpython.exc cimport (PyErr_Occurred, PyErr_SetString, PyErr_CheckSignals, PyErr_Fetch, PyErr_Restore, PyErr_NormalizeException)
+
+raise_kbint = 0
+
+cdef extern from "sig_manager.c":
+    void setup_sighandler() nogil
+    void PyErr_SetNone(object type)
+
+def python_check_interrupt(sig, frame):
+    global raise_kbint
+    raise_kbint = 1
+
+cdef public int pynmsg_raise_signal "pynmsg_raise_signal"(int sig) except 0 with gil:
+    if PyErr_Occurred():
+        return 0
+    elif sig == SIGINT:
+        PyErr_SetNone(KeyboardInterrupt)
+    elif sig == SIGTERM or sig == SIGHUP:
+        PyErr_SetNone(SystemExit)
+    cdef PyObject* typ
+    cdef PyObject* val
+    cdef PyObject* tb
+    PyErr_Fetch(&typ, &val, &tb)
+    PyErr_NormalizeException(&typ, &val, &tb)
+    Py_XINCREF(val)
+    PyErr_Restore(typ, val, tb)
+    PyErr_CheckSignals()
+    return 0
 
 cdef class io(object):
     cdef nmsg_io_t _instance
@@ -40,11 +71,17 @@ cdef class io(object):
         self.filter_source = 0
         self.inputs = []
         self.outputs = []
+        _giveup = 0
 
         self._instance = nmsg_io_init()
         if self._instance == NULL:
             raise Exception, 'nmsg_io_init() failed'
-        #nmsg_io_set_debug(self._instance, 4)
+
+        import signal
+        old_sigh = signal.signal(signal.SIGINT, python_check_interrupt)
+        setup_sighandler()
+
+        # nmsg_io_set_debug(self._instance, 4)
 
     def add_input(self, input i):
         cdef nmsg_res res
@@ -70,7 +107,7 @@ cdef class io(object):
         for f in chalias_fnames:
             if os.path.isfile(f):
                 fname = f
-        if fname == None:
+        if fname is None:
             raise Exception, 'unable to locate nmsg channel alias file'
 
         found_channel = False
@@ -92,7 +129,7 @@ cdef class io(object):
             raise Exception, 'lookup of channel %s failed'
 
     def add_output(self, output o):
-        cdef nmsg_res
+        cdef nmsg_res res
 
         if o._instance == NULL:
             raise Exception, 'output object not initialized'
@@ -109,7 +146,14 @@ cdef class io(object):
         cdef output o
         cdef nmsg_res res
 
-        o = output.open_callback(fn)
+        def wrapper(msg):
+            if raise_kbint == 0:
+                fn(msg)
+            else:
+                self.break_loop()
+                raise KeyboardInterrupt
+
+        o = output.open_callback(wrapper)
         self.add_output(o)
 
     def set_filter_msgtype(self, vid, msgtype):
@@ -125,15 +169,13 @@ cdef class io(object):
         self.filter_source = source
 
     def set_filter_operator(self, str s_operator):
-        operator = nmsg_alias_by_value(nmsg_alias_operator, PyString_AsString(s_operator))
-        if operator == 0:
-            raise Exception, 'unknown operator %s' % s_operator
+        # oname_to_oid will raise an exception if s_operator is not in the nmsg.opalias file
+        msgmod.oname_to_oid(s_operator)
         self.filter_operator = s_operator
 
     def set_filter_group(self, str s_group):
-        group = nmsg_alias_by_value(nmsg_alias_group, PyString_AsString(s_group))
-        if group == 0:
-            raise Exception, 'unknown group %s' % s_group
+        # Check that the group is in the nmsg.gralias file, raise Exception if not
+        msgmod.grname_to_grid(s_group)
         self.filter_group = s_group
 
     def loop(self):

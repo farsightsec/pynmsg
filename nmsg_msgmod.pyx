@@ -1,6 +1,6 @@
 #cython: embedsignature=True
 
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2015, 2018-2019 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+def msgmod_oname_to_oid(str oname):
+    cdef unsigned oid
+    cdef char *oname2
+    t = oname.encode('ascii')
+    oname2 = t
+    oid = nmsg_alias_by_value(nmsg_alias_operator, oname2)
+    if oid == 0:
+        raise Exception, 'unknown operator name: %s' % oname
+    return oid
+
+def msgmod_grname_to_grid(str grname):
+    cdef unsigned oid
+    cdef char *grname2
+    t = grname.encode('ascii')
+    grname2 = t
+    grid = nmsg_alias_by_value(nmsg_alias_group, grname2)
+    if grid == 0:
+        raise Exception, 'unknown group name: %s' % grname
+    return grid
+
 def msgmod_get_max_msgtype(unsigned vid):
-    cdef char *vname
+    cdef const char *vname
     vname = nmsg_msgmod_vid_to_vname(vid)
     if vname == NULL:
         raise Exception, 'unknown vendor ID'
@@ -23,31 +43,37 @@ def msgmod_get_max_msgtype(unsigned vid):
         return nmsg_msgmod_get_max_msgtype(vid)
 
 def msgmod_vid_to_vname(unsigned vid):
-    cdef char *vname
+    cdef const char *vname
     vname = nmsg_msgmod_vid_to_vname(vid)
     if vname == NULL:
         raise Exception, 'unknown vendor ID'
     else:
-        return str(vname)
+        return vname.decode('utf-8')
 
-def msgmod_vname_to_vid(char *vname):
+def msgmod_vname_to_vid(str vname):
     cdef unsigned vid
-    vid = nmsg_msgmod_vname_to_vid(vname)
+    cdef char *vname2
+    t = vname.encode('ascii')
+    vname2 = t
+    vid = nmsg_msgmod_vname_to_vid(vname2)
     if vid == 0:
         raise Exception, 'unknown vendor name'
     return vid
 
 def msgmod_msgtype_to_mname(unsigned vid, unsigned msgtype):
-    cdef char *mname
+    cdef const char *mname
     mname = nmsg_msgmod_msgtype_to_mname(vid, msgtype)
     if mname == NULL:
         raise Exception, 'unknown message type'
     else:
-        return str(mname)
+        return mname.decode('utf-8')
 
-def msgmod_mname_to_msgtype(unsigned vid, char *mname):
+def msgmod_mname_to_msgtype(unsigned vid, mname):
     cdef unsigned msgtype
-    msgtype = nmsg_msgmod_mname_to_msgtype(vid, mname)
+    cdef char *mname2
+    t = mname.encode('ascii')
+    mname2 = t
+    msgtype = nmsg_msgmod_mname_to_msgtype(vid, mname2)
     if msgtype == 0:
         raise Exception, 'unknown vendor ID or message type name'
     return msgtype
@@ -63,9 +89,11 @@ cdef class msgmod(object):
     vname_to_vid = staticmethod(msgmod_vname_to_vid)
     msgtype_to_mname = staticmethod(msgmod_msgtype_to_mname)
     mname_to_msgtype = staticmethod(msgmod_mname_to_msgtype)
+    oname_to_oid = staticmethod(msgmod_oname_to_oid)
+    grname_to_grid = staticmethod(msgmod_grname_to_grid)
 
     def __cinit__(self, unsigned vid, unsigned msgtype):
-        cdef nmsg_res
+        cdef nmsg_res res
 
         self._instance = nmsg_msgmod_lookup(vid, msgtype)
         if self._instance != NULL:

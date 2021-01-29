@@ -15,3 +15,32 @@ the Cython-generated code and do not require Cython to actually be installed.
 `pynmsg` is built by running `setup.py`:
 
     python setup.py build
+
+
+Python Performance
+------------------
+Some notes on performance. In particular, Python isn't great at receiving nmsgs
+off of the network at high rates, and processing them reliably.
+
+Reading from a socket suffers about 75% loss (our test sent 1723300 messages,
+pynmsg recvd ~400k), so although the ability to read from the network exists,
+but transport is UDP, this Python library is not appropriate for receiving a
+high volume container stream.
+
+C Performance
+-------------
+
+As a point of comparison, running the same test: using nmsgtool to read from a
+file, write to a localhost socket but instead of Python, using another nmsgtool
+reading from the localhost socket:
+
+writer sends: 1723300 messages
+
+reader reads:
+
+| run# |   read  | loss|
+|-----|---------|-----|
+|1   |  1717510  | <1%|
+|2   |  1710776  | <1%|
+|3   |  1709553  | <1%|
+|4   |  1666319  |~3%|

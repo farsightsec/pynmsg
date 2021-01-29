@@ -1,6 +1,6 @@
 #cython: embedsignature=True
 
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2015, 2018-2021 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,6 +13,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import threading
+
+def _cstr2str(x):
+    t = x.decode('ascii')
+    return t
 
 def input_open_file(obj):
     if type(obj) == str:
@@ -42,9 +47,13 @@ def input_open_sock(addr, port):
 
 cdef class nullinput(object):
     cdef nmsg_input_t _instance
+    cdef object lock
 
     def __cinit__(self):
         self._instance = nmsg_input_open_null()
+
+    def __init__(self):
+        self.lock = threading.Lock()
 
     def __dealloc__(self):
         if self._instance != NULL:
@@ -53,17 +62,33 @@ cdef class nullinput(object):
     def __repr__(self):
         return 'nmsg nullinput object _instance=0x%x' % <uint64_t> self._instance
 
-    def read(self, str buf):
+    def read(self, bytes buf, tv=None):
         cdef nmsg_res res
         cdef nmsg_message_t *_msgarray
         cdef size_t n_msg
         cdef _recv_message msg
+        cdef timespec ts
+        cdef timespec *tsp
         msg_list = []
 
         if self._instance == NULL:
             raise Exception, 'object not initialized'
 
-        res = nmsg_input_read_null(self._instance, <uint8_t *> PyString_AsString(buf), len(buf), NULL, &_msgarray, &n_msg)
+        cdef uint8_t * buf_ptr = <uint8_t *> buf
+        cdef size_t buf_len = len(buf)
+
+        if tv is not None:
+            if not isinstance(tv, numbers.Real):
+                raise ValueError('tv must be a real number')
+            ts.tv_sec = int(tv)
+            ts.tv_nsec = tv - int(tv)
+            tsp = &ts
+        else:
+            tsp = NULL
+
+        with self.lock:
+            with nogil:
+                res = nmsg_input_read_null(self._instance, buf_ptr, buf_len, tsp, &_msgarray, &n_msg)
 
         if res == nmsg_res_success:
             for i from 0 <= i < n_msg:
@@ -71,6 +96,8 @@ cdef class nullinput(object):
                 msg.set_instance(_msgarray[i])
                 msg_list.append(msg)
             free(_msgarray)
+        else:
+            raise Exception, 'nmsg_input_null() failed: %s' % _cstr2str(nmsg_res_lookup(res))
 
         return msg_list
 
@@ -79,6 +106,7 @@ cdef class input(object):
     cdef object fileobj
     cdef str input_type
     cdef bool blocking_io
+    cdef object lock
 
     open_file = staticmethod(input_open_file)
     open_json = staticmethod(input_open_json)
@@ -86,6 +114,7 @@ cdef class input(object):
 
     def __cinit__(self):
         self._instance = NULL
+        self.lock = threading.Lock()
 
     def __dealloc__(self):
         if self._instance != NULL:
@@ -95,7 +124,7 @@ cdef class input(object):
         self.blocking_io = True
 
     def __repr__(self):
-        return 'nmsg input object type=%s _instance=0x%x' % (self.input_type, <uint64_t> self._instance)
+        return 'nmsg input object type=%s _instance=0x%x' % (_cstr2str(self.input_type), <uint64_t> self._instance)
 
     cpdef _open_file(self, fileobj):
         self.fileobj = fileobj
@@ -142,7 +171,9 @@ cdef class input(object):
         res = nmsg_res_failure
 
         while res != nmsg_res_success:
-            res = nmsg_input_read(self._instance, &_msg)
+            with self.lock:
+                with nogil:
+                    res = nmsg_input_read(self._instance, &_msg)
             if res == nmsg_res_success:
                 msg = _recv_message()
                 msg.set_instance(_msg)
@@ -154,11 +185,11 @@ cdef class input(object):
                 if err != 0:
                     if PyErr_ExceptionMatches(KeyboardInterrupt):
                         raise KeyboardInterrupt
-                elif self.blocking_io == False:
+                elif self.blocking_io is False:
                     return None
                 continue
             else:
-                raise Exception, 'nmsg_input_read() failed: %s' % nmsg_res_lookup(res)
+                raise Exception, 'nmsg_input_read() xfailed: %s' % _cstr2str(nmsg_res_lookup(res))
         
     def set_filter_msgtype(self, vid, msgtype):
         if self._instance == NULL:
@@ -179,9 +210,8 @@ cdef class input(object):
 
         if self._instance == NULL:
             raise Exception, 'object not initialized'
-        operator = nmsg_alias_by_value(nmsg_alias_operator, PyString_AsString(s_operator))
-        if operator == 0:
-            raise Exception, 'unknown operator %s' % s_operator
+        # oname_to_oid will raise an exception if s_operator is not in the nmsg.opalias file
+        operator = msgmod.oname_to_oid(s_operator)
         nmsg_input_set_filter_operator(self._instance, operator)
 
     def set_filter_group(self, str s_group):
@@ -189,9 +219,8 @@ cdef class input(object):
 
         if self._instance == NULL:
             raise Exception, 'object not initialized'
-        group = nmsg_alias_by_value(nmsg_alias_group, PyString_AsString(s_group))
-        if group == 0:
-            raise Exception, 'unknown group %s' % s_group
+        # Get the the group id from the nmsg.gralias file, raise Exception if the group name is not in the file
+        group = msgmod.grname_to_grid(s_group)
         nmsg_input_set_filter_group(self._instance, group)
 
     def set_blocking_io(self, bool flag):

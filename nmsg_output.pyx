@@ -1,6 +1,6 @@
 #cython: embedsignature=True
 
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2015, 2018-2019 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -49,10 +49,8 @@ def output_open_callback(func):
 
 cdef void callback(nmsg_message_t _msg, void *user) with gil:
     cdef _recv_message msg
-
     msg = _recv_message()
     msg.set_instance(_msg)
-
     (<object>user)(msg)
 
 cdef class output(object):
@@ -60,6 +58,7 @@ cdef class output(object):
     cdef public object fileobj
     cdef public object func
     cdef str output_type
+    cdef object lock
 
     open_file = staticmethod(output_open_file)
     open_json = staticmethod(output_open_json)
@@ -68,6 +67,7 @@ cdef class output(object):
 
     def __cinit__(self):
         self._instance = NULL
+        self.lock = threading.Lock()
 
     def __dealloc__(self):
         if self._instance != NULL:
@@ -149,7 +149,9 @@ cdef class output(object):
         _msg_instance = msg._instance
         msg._instance = NULL
 
-        res = nmsg_output_write(self._instance, _msg_instance)
+        with self.lock:
+            with nogil:
+                res = nmsg_output_write(self._instance, _msg_instance)
         if res != nmsg_res_success:
             nmsg_message_destroy(&_msg_instance)
             raise Exception, 'nmsg_output_write() failed'

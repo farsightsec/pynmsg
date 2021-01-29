@@ -1,4 +1,4 @@
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2015, 2018-2019 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -43,18 +43,13 @@ cdef extern from "time.h":
         long tv_nsec
  
 cdef extern from "Python.h":
-    int PyString_AsStringAndSize(object string, char **buffer, Py_ssize_t *length) except -1
-    object PyString_FromString(char *v)
-    object PyString_FromStringAndSize(char *v, int len)
-    Py_ssize_t PyString_Size(object string)
-    char *PyString_AsString(object string)
     void Py_INCREF(object)
     void Py_DECREF(object)
     void PyEval_InitThreads()
     int PyErr_CheckSignals()
     int PyErr_ExceptionMatches(object)
 
-cdef extern from "nmsg.h":
+cdef extern from "nmsg.h" nogil:
     cdef enum:
         NMSG_WBUFSZ_MIN = 512
         NMSG_WBUFSZ_MAX = 1048576
@@ -187,7 +182,7 @@ cdef extern from "nmsg.h":
 
     unsigned            nmsg_msgmod_get_max_vid()
     unsigned            nmsg_msgmod_get_max_msgtype(unsigned vid)
-    char *              nmsg_msgmod_vid_to_vname(unsigned vid)
+    const char *        nmsg_msgmod_vid_to_vname(unsigned vid)
     char *              nmsg_msgmod_msgtype_to_mname(unsigned vid, unsigned msgtype)
     nmsg_msgmod_t       nmsg_msgmod_lookup(unsigned vid, unsigned msgtype)
     nmsg_msgmod_t       nmsg_msgmod_lookup_byname(char *vname, char *mname)
@@ -224,13 +219,13 @@ cdef extern from "nmsg.h":
     nmsg_res            nmsg_message_enum_value_to_name(nmsg_message_t msg, char *field_name, unsigned value, char **name)
     nmsg_res            nmsg_message_enum_value_to_name_by_idx(nmsg_message_t msg, unsigned field_idx, unsigned value, char **name)
 
-    nmsg_input_t        nmsg_input_open_file(int fd)
+    nmsg_input_t        nmsg_input_open_file(int fd) nogil
     nmsg_input_t        nmsg_input_open_json(int fd) nogil
-    nmsg_input_t        nmsg_input_open_sock(int fd)
+    nmsg_input_t        nmsg_input_open_sock(int fd) nogil
     nmsg_input_t        nmsg_input_open_null()
     nmsg_res            nmsg_input_close(nmsg_input_t *input)
     nmsg_res            nmsg_input_read(nmsg_input_t input, nmsg_message_t *msg)
-    nmsg_res            nmsg_input_read_null(nmsg_input_t input, uint8_t *buf, size_t buf_len, timespec *ts, nmsg_message_t **msgarray, size_t *n_msg)
+    nmsg_res            nmsg_input_read_null(nmsg_input_t input, uint8_t *buf, size_t buf_len, timespec *ts, nmsg_message_t **msgarray, size_t *n_msg) nogil
     void                nmsg_input_set_filter_msgtype(nmsg_input_t input, unsigned vid, unsigned msgtype)
     void                nmsg_input_set_filter_source(nmsg_input_t input, unsigned source)
     void                nmsg_input_set_filter_operator(nmsg_input_t input, unsigned operator)

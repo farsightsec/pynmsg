@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (c) 2009-2014 by Farsight Security, Inc.
+# Copyright (c) 2009-2014, 2018-2019 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 # limitations under the License.
 
 import nmsg
-import socket
 import sys
+
 
 def print_nmsg(m):
     nmsg.print_nmsg_header(m, sys.stdout)
@@ -30,11 +30,13 @@ def print_nmsg(m):
             sys.stdout.write('%s: %s\n' % (key, repr(val)))
     sys.stdout.write('\n')
 
+
 def main(ch):
     io = nmsg.io()
     io.add_input_channel(ch)
     io.add_output_callback(print_nmsg)
     io.loop()
+
 
 if __name__ == '__main__':
     main(sys.argv[1])
