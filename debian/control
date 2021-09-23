@@ -11,7 +11,7 @@ Build-Depends:
  python3-setuptools,
  cython (>= 0.15~),
  cython3,
- libnmsg-dev (>= 0.10.0~),
+ libnmsg-dev (>= 1.0.0~),
  pkg-config,
 Standards-Version: 3.9.8
 
