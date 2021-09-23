@@ -1,3 +1,9 @@
+pynmsg (0.5.0-2) debian-farsightsec; urgency=medium
+
+  * Specify libnmsg-dev 1.0.0, 0mq migration (libzmq).
+
+ -- Farsight Security, Inc. <software@farsightsecurity.com>  Thu, 23 Sep 2021 17:31:03 +0000
+
 pynmsg (0.5.0-1) debian-farsightsec; urgency=medium
 
   * Add Python3 support.
