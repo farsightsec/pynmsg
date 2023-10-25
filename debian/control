@@ -3,13 +3,10 @@ Section: python
 Priority: optional
 Maintainer: Farsight Security, Inc. <software@farsightsecurity.com>
 Build-Depends:
- python-all-dev (>= 2.6.6-3~),
  python3-all-dev (>= 3.5~),
  debhelper (>= 10~),
  dh-python,
- python-setuptools,
  python3-setuptools,
- cython (>= 0.15~),
  cython3,
  libnmsg-dev (>= 1.0.0~),
  pkg-config,
