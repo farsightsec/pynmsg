@@ -21,6 +21,7 @@ import os
 import warnings
 import multiprocessing as mp
 import socket
+import tempfile
 
 try:
     # This is needed because 'spawn' is the start method in macos by default since 3.8.
@@ -308,6 +309,18 @@ class TestNMSG(unittest.TestCase):
         s.flush()
         s.close()
         p.join()
+
+    @ignore_warnings
+    def test_input_repr_should_not_raise(self):
+        with (tempfile.NamedTemporaryFile(prefix='test-data-', dir='/tmp', delete=True)) as f:
+            f.write(data)
+            f.flush()
+            nif = nmsg.input_open_file(f.name)
+            try:
+                nif.__repr__()
+            except Exception:
+                self.fail('input_open_file then __repr__() failed')
+            nif.close()
 
 
 if __name__ == "__main__":

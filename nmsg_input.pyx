@@ -124,7 +124,7 @@ cdef class input(object):
         self.blocking_io = True
 
     def __repr__(self):
-        return 'nmsg input object type=%s _instance=0x%x' % (_cstr2str(self.input_type), <uint64_t> self._instance)
+        return 'nmsg input object type=%s _instance=0x%x' % (self.input_type, <uint64_t> self._instance)
 
     cpdef _open_file(self, fileobj):
         self.fileobj = fileobj
