@@ -19,14 +19,14 @@ class _msgtype(object):
         cdef const char *vname_str
         cdef const char *mname_str
 
-        for vid from 1 <= vid <= nmsg_msgmod_get_max_vid():
+        for vid in range(1, nmsg_msgmod_get_max_vid() + 1):
             vname_str = nmsg_msgmod_vid_to_vname(vid)
 
             if vname_str:
                 vname = vname_str.decode('utf-8').lower()
                 v_dict = {}
 
-                for msgtype from 1 <= msgtype <= nmsg_msgmod_get_max_msgtype(vid):
+                for msgtype in range(1, nmsg_msgmod_get_max_msgtype(vid) + 1):
                     mname_str = nmsg_msgmod_msgtype_to_mname(vid, msgtype)
                     if mname_str:
                         mname = mname_str.decode('utf-8').lower()
