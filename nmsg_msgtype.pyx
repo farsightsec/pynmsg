@@ -32,8 +32,8 @@ class _msgtype(object):
                         mname = mname_str.decode('utf-8').lower()
                         mod = msgmod(vid, msgtype)
                         m_dict = {
-                            '__vid':     vid,
-                            '__msgtype': msgtype,
+                            '_vid': vid,
+                            '_msgtype': msgtype,
                         }
                         v_dict[mname] = type(str('%s_%s' % (vname, mname)), (_meta_message,), m_dict)
                 v_dict['_vname'] = vname

@@ -407,7 +407,7 @@ cdef class _recv_message(message):
 
 cdef class _meta_message(message):
     def __init__(self):
-        message.__init__(self, self.__vid, self.__msgtype)
+        message.__init__(self, self._vid, self._msgtype)
 
 cdef class _json_message(message):
     def __init__(self, bytes json):
