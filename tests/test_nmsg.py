@@ -21,6 +21,7 @@ import os
 import warnings
 import multiprocessing as mp
 import socket
+import tempfile
 
 try:
     # This is needed because 'spawn' is the start method in macos by default since 3.8.
@@ -31,6 +32,7 @@ except AttributeError:
 
 data = b'NMSG\x00\x02\x00\x00\x02\x1c\n.\x08\x01\x10\x0b\x18\xe2\xaa\xe5\xe0\x05%\x92\xa0\x93%*\x17\x08\x00\x12\x13"FSI SIE heartbeat"8\xfd\xd9\x80\xdd\x01\n.\x08\x01\x10\x0b\x18\xe3\xaa\xe5\xe0\x05%\xcd\x8c\xd0\x07*\x17\x08\x00\x12\x13"FSI SIE heartbeat"8\xfd\xd9\x80\xdd\x01\n.\x08\x01\x10\x0b\x18\xe3\xaa\xe5\xe0\x05%T\xc3\xa6%*\x17\x08\x00\x12\x13"FSI SIE heartbeat"8\xfd\xd9\x80\xdd\x01\n.\x08\x01\x10\x0b\x18\xe4\xaa\xe5\xe0\x05%\xa2v\xe2\x07*\x17\x08\x00\x12\x13"FSI SIE heartbeat"8\xfd\xd9\x80\xdd\x01\n.\x08\x01\x10\x0b\x18\xe4\xaa\xe5\xe0\x05%\xb8\xc0\xb8%*\x17\x08\x00\x12\x13"FSI SIE heartbeat"8\xfd\xd9\x80\xdd\x01\n.\x08\x01\x10\x0b\x18\xe5\xaa\xe5\xe0\x05%\x0b$\xf5\x07*\x17\x08\x00\x12\x13"FSI SIE heartbeat"8\xfd\xd9\x80\xdd\x01\n.\x08\x01\x10\x0b\x18\xe5\xaa\xe5\xe0\x05%\x04\x14\xcd%*\x17\x08\x00\x12\x13"FSI SIE heartbeat"8\xfd\xd9\x80\xdd\x01\n.\x08\x01\x10\x0b\x18\xe6\xaa\xe5\xe0\x05%\xd4\x92\x05\x08*\x17\x08\x00\x12\x13"FSI SIE heartbeat"8\xfd\xd9\x80\xdd\x01\n.\x08\x01\x10\x0b\x18\xe6\xaa\xe5\xe0\x05%\xe9\xdc\xdb%*\x17\x08\x00\x12\x13"FSI SIE heartbeat"8\xfd\xd9\x80\xdd\x01\n.\x08\x01\x10\x0b\x18\xe7\xaa\xe5\xe0\x05%\xc7\xa3\x17\x08*\x17\x08\x00\x12\x13"FSI SIE heartbeat"8\xfd\xd9\x80\xdd\x01\x10\xac\x8c\xd8\xff\x08\x10\xac\x8c\xd8\xff\x08\x10\xac\x8c\xd8\xff\x08\x10\xac\x8c\xd8\xff\x08\x10\xac\x8c\xd8\xff\x08\x10\xac\x8c\xd8\xff\x08\x10\xac\x8c\xd8\xff\x08\x10\xac\x8c\xd8\xff\x08\x10\xac\x8c\xd8\xff\x08\x10\xac\x8c\xd8\xff\x08'
 
+expected = {'val': '"FSI SIE heartbeat"', 'b64': 'IkZTSSBTSUUgaGVhcnRiZWF0Ig=='}
 
 try:
     warnings.simplefilter("ignore", ResourceWarning)
@@ -87,7 +89,7 @@ class TestNMSG(unittest.TestCase):
         assert len(mlist) == 10
         j = json.loads(mlist[0].to_json())
         self.assertEqual(j['message']['type'], "TEXT")
-        self.assertEqual(j['message']['payload'], "IkZTSSBTSUUgaGVhcnRiZWF0Ig==")
+        self.assertEqual(j['message']['payload'], expected)
 
     @ignore_warnings
     def test_send_recv_filter_match(self):
@@ -100,7 +102,7 @@ class TestNMSG(unittest.TestCase):
             j = json.loads(r.read().to_json())
             r.close()
             self.assertEqual(j['message']['type'], "TEXT")
-            self.assertEqual(j['message']['payload'], "IkZTSSBTSUUgaGVhcnRiZWF0Ig==")
+            self.assertEqual(j['message']['payload'], expected)
 
         p = mp.Process(target=reader)
         p.start()
@@ -125,7 +127,7 @@ class TestNMSG(unittest.TestCase):
             with self.assertRaises(TimeoutError):
                 j = json.loads(r.read().to_json())
                 self.assertEqual(j['message']['type'], "TEXT")
-                self.assertEqual(j['message']['payload'], "IkZTSSBTSUUgaGVhcnRiZWF0Ig==")
+                self.assertEqual(j['message']['payload'], expected)
 
         p = mp.Process(target=reader)
         p.start()
@@ -151,7 +153,7 @@ class TestNMSG(unittest.TestCase):
                     j = json.loads(r.read().to_json())
                     r.close()
                     self.assertEqual(j['message']['type'], "TEXT")
-                    self.assertEqual(j['message']['payload'], "IkZTSSBTSUUgaGVhcnRiZWF0Ig==")
+                    self.assertEqual(j['message']['payload'], expected)
             except TimeoutError:
                 r.close()
                 assert False, "timeout occurred but should not have"
@@ -177,7 +179,7 @@ class TestNMSG(unittest.TestCase):
             j = json.loads(r.read().to_json())
             r.close()
             self.assertEqual(j['message']['type'], "TEXT")
-            self.assertEqual(j['message']['payload'], "IkZTSSBTSUUgaGVhcnRiZWF0Ig==")
+            self.assertEqual(j['message']['payload'], expected)
 
         num = mp.Value('d', 0)
         p = mp.Process(target=reader, args=(num,))
@@ -308,6 +310,18 @@ class TestNMSG(unittest.TestCase):
         s.flush()
         s.close()
         p.join()
+
+    @ignore_warnings
+    def test_input_repr_should_not_raise(self):
+        with (tempfile.NamedTemporaryFile(prefix='test-data-', dir='/tmp', delete=True)) as f:
+            f.write(data)
+            f.flush()
+            nif = nmsg.input_open_file(f.name)
+            try:
+                nif.__repr__()
+            except Exception:
+                self.fail('input_open_file then __repr__() failed')
+            nif.close()
 
 
 if __name__ == "__main__":

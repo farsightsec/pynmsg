@@ -168,7 +168,7 @@ cdef class message(object):
         if res != nmsg_res_success:
             raise Exception, 'nmsg_message_get_num_fields() failed'
 
-        for field_idx from 0 <= field_idx < n_fields:
+        for field_idx in range(n_fields):
             res = nmsg_message_get_field_name(self._instance, field_idx, &field_name)
             if res != nmsg_res_success:
                 raise Exception, 'nmsg_message_get_field_name() failed'
@@ -407,7 +407,7 @@ cdef class _recv_message(message):
 
 cdef class _meta_message(message):
     def __init__(self):
-        message.__init__(self, self.__vid, self.__msgtype)
+        message.__init__(self, self._vid, self._msgtype)
 
 cdef class _json_message(message):
     def __init__(self, bytes json):
