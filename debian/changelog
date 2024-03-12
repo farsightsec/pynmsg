@@ -1,3 +1,12 @@
+pynmsg (0.5.1-1) UNRELEASED; urgency=medium
+
+  * Switch to new for loop style.
+  * Fix _repr_ error for input class.
+  * Fix error caused by name mangling.
+  * Fix tests.
+
+ -- Farsight Security Inc <software@farsightsecurity.com>  Tue, 12 Mar 2024 16:07:46 -0400
+
 pynmsg (0.5.0-2) debian-farsightsec; urgency=medium
 
   * Specify libnmsg-dev 1.0.0, 0mq migration (libzmq).
