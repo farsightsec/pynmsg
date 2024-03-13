@@ -8,7 +8,7 @@ Build-Depends:
  dh-python,
  python3-setuptools,
  cython3,
- libnmsg-dev (>= 1.0.0~),
+ libnmsg-dev (>= 1.1.2~),
  pkg-config,
 Standards-Version: 3.9.8
 
