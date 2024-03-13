@@ -1,5 +1,6 @@
 #cython: embedsignature=True
 
+# Copyright (c) 2023 DomainTools LLC
 # Copyright (c) 2009-2015, 2018-2019 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,21 +20,21 @@ class _msgtype(object):
         cdef const char *vname_str
         cdef const char *mname_str
 
-        for vid from 1 <= vid <= nmsg_msgmod_get_max_vid():
+        for vid in range(1, nmsg_msgmod_get_max_vid() + 1):
             vname_str = nmsg_msgmod_vid_to_vname(vid)
 
             if vname_str:
                 vname = vname_str.decode('utf-8').lower()
                 v_dict = {}
 
-                for msgtype from 1 <= msgtype <= nmsg_msgmod_get_max_msgtype(vid):
+                for msgtype in range(1, nmsg_msgmod_get_max_msgtype(vid) + 1):
                     mname_str = nmsg_msgmod_msgtype_to_mname(vid, msgtype)
                     if mname_str:
                         mname = mname_str.decode('utf-8').lower()
                         mod = msgmod(vid, msgtype)
                         m_dict = {
-                            '__vid':     vid,
-                            '__msgtype': msgtype,
+                            '_vid': vid,
+                            '_msgtype': msgtype,
                         }
                         v_dict[mname] = type(str('%s_%s' % (vname, mname)), (_meta_message,), m_dict)
                 v_dict['_vname'] = vname

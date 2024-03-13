@@ -1,5 +1,6 @@
 #cython: embedsignature=True
 
+# Copyright (c) 2023 DomainTools LLC
 # Copyright (c) 2009-2015, 2018-2021 by Farsight Security, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -91,7 +92,7 @@ cdef class nullinput(object):
                 res = nmsg_input_read_null(self._instance, buf_ptr, buf_len, tsp, &_msgarray, &n_msg)
 
         if res == nmsg_res_success:
-            for i from 0 <= i < n_msg:
+            for i in range(n_msg):
                 msg = _recv_message()
                 msg.set_instance(_msgarray[i])
                 msg_list.append(msg)
@@ -124,7 +125,7 @@ cdef class input(object):
         self.blocking_io = True
 
     def __repr__(self):
-        return 'nmsg input object type=%s _instance=0x%x' % (_cstr2str(self.input_type), <uint64_t> self._instance)
+        return 'nmsg input object type=%s _instance=0x%x' % (self.input_type, <uint64_t> self._instance)
 
     cpdef _open_file(self, fileobj):
         self.fileobj = fileobj
