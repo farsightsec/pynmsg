@@ -45,7 +45,6 @@ cdef extern from "time.h":
 cdef extern from "Python.h":
     void Py_INCREF(object)
     void Py_DECREF(object)
-    void PyEval_InitThreads()
     int PyErr_CheckSignals()
     int PyErr_ExceptionMatches(object)
 

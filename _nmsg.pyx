@@ -23,8 +23,6 @@ import threading
 
 include "nmsg.pxi"
 
-PyEval_InitThreads()
-
 chalias_fnames = (
     '/etc/nmsgtool.chalias',
     '/etc/nmsg.chalias',
