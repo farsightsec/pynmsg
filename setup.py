@@ -22,19 +22,21 @@ import unittest
 import os
 import shutil
 
-NAME = 'pynmsg'
-VERSION = '0.5.0'
+NAME = "pynmsg"
+VERSION = "0.5.1"
 
 
 class Cleaner(clean):
     def run(self):
         clean.run(self)
-        for i in ["_nmsg.c",
-                  "_nmsg.h",
-                  "build",
-                  "__pycache__",
-                  "pynmsg.egg-info",
-                  "dist"]:
+        for i in [
+            "_nmsg.c",
+            "_nmsg.h",
+            "build",
+            "__pycache__",
+            "pynmsg.egg-info",
+            "dist",
+        ]:
             print("Cleaning ", i)
             if os.path.isfile(i):
                 os.unlink(i)
@@ -44,6 +46,7 @@ class Cleaner(clean):
 
 class Test(Command):
     user_options = []
+
     def initialize_options(self):
         pass
 
@@ -52,26 +55,23 @@ class Test(Command):
 
     def run(self):
         unittest.TextTestRunner(verbosity=1).run(
-            unittest.TestLoader().discover('tests'))
+            unittest.TestLoader().discover("tests")
+        )
 
 
 def pkgconfig(*packages, **kw):
     import subprocess
-    flag_map = {
-            '-I': 'include_dirs',
-            '-L': 'library_dirs',
-            '-l': 'libraries'
-    }
+
+    flag_map = {"-I": "include_dirs", "-L": "library_dirs", "-l": "libraries"}
 
     pkg_config_cmd = (
-        'pkg-config',
-        '--cflags',
-        '--libs',
-        ' '.join(packages),
+        "pkg-config",
+        "--cflags",
+        "--libs",
+        " ".join(packages),
     )
 
-    pkg_config_output = subprocess.check_output(pkg_config_cmd,
-                                                universal_newlines=True)
+    pkg_config_output = subprocess.check_output(pkg_config_cmd, universal_newlines=True)
 
     for token in pkg_config_output.split():
         flag = token[:2]
@@ -80,37 +80,49 @@ def pkgconfig(*packages, **kw):
             kw.setdefault(flag_map[flag], []).append(arg)
     return kw
 
+
 try:
     from Cython.Build import build_ext, cythonize
     from distutils.extension import Extension
-    extensions = [Extension("_nmsg", ['_nmsg.pyx', 'sig_manager.c'],
-                            extra_compile_args=["-Wno-unused-variable"],
-                            depends=[
-                                'nmsg.pxi',
-                                'nmsg_input.pyx',
-                                'nmsg_io.pyx',
-                                'nmsg_message.pyx',
-                                'nmsg_msgmod.pyx',
-                                'nmsg_msgtype.pyx',
-                                'nmsg_output.pyx',
-                                'nmsg_util.pyx',
-                            ],
-                            **pkgconfig('libnmsg >= 0.10.0')
-                            )]
+
+    extensions = [
+        Extension(
+            "_nmsg",
+            ["_nmsg.pyx", "sig_manager.c"],
+            extra_compile_args=["-Wno-unused-variable"],
+            depends=[
+                "nmsg.pxi",
+                "nmsg_input.pyx",
+                "nmsg_io.pyx",
+                "nmsg_message.pyx",
+                "nmsg_msgmod.pyx",
+                "nmsg_msgtype.pyx",
+                "nmsg_output.pyx",
+                "nmsg_util.pyx",
+            ],
+            **pkgconfig("libnmsg >= 0.10.0")
+        )
+    ]
 
     for f in ["_nmsg.c", "_nmsg.h"]:
         try:
             os.remove(f)
         except OSError:
             pass
-    setup(ext_modules=cythonize(extensions),
-          name=NAME,
-          version=VERSION,
-          py_modules=['nmsg'],
-          cmdclass={'test': Test, 'clean': Cleaner},
-          zip_safe=True
-          )
+    setup(
+        ext_modules=cythonize(extensions),
+        name=NAME,
+        version=VERSION,
+        py_modules=["nmsg"],
+        cmdclass={"test": Test, "clean": Cleaner},
+        zip_safe=True,
+    )
 except ImportError as e:
     import sys
-    print("Cython is required. You are building with Python {}".format(sys.version_info.major))
+
+    print(
+        "Cython is required. You are building with Python {}".format(
+            sys.version_info.major
+        )
+    )
     print(e)
